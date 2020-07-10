@@ -1,50 +1,44 @@
-[data-numbered] {
+.line-numbered {
   height: 8ch;
   display: inline-flex;
   vertical-align: top;
   font-family: monospace;
   font-size: 13px;
-  border: 1px solid var(--accent-color);
-  border-radius: 2px;
+  border: 1px solid #767676;
   overflow: hidden;
   resize: both;
-  --child-padding: 0.5ch;
-  --accent-color: #767676;
-  --background: #ffffff;
-  --line-count-background: #d3d3d3;
 }
-[data-numbered]:focus-within {
-  border-color: var(--focus-color);
-  box-shadow: 0 0 0 1px var(--focus-color);
-  --focus-color: #000000;
+.line-numbered:focus-within {
+  outline: 2px solid;
+  outline-offset: -1px;
 }
-[data-numbered] * {
+.line-numbered * {
   flex-shrink: 0;
   font-family: inherit;
   font-size: inherit;
 }
-[data-numbered] ol {
+.line-numbered ol {
   counter-reset: item;
   margin: 0;
-  padding: var(--child-padding);
-  color: var(--accent-color);
+  padding: 0.5ch;
+  color: #767676;
   text-align: right;
-  text-shadow: 0.1ch 0.1ch var(--background);
-  background: var(--line-count-background);
-  border-right: 1px solid var(--accent-color);
+  text-shadow: 0.1ch 0.1ch #ffffff;
+  background: #d3d3d3;
+  border-right: inherit;
   cursor: text;
   list-style: inside none;
   overflow: hidden;
 }
-[data-numbered] li::before {
+.line-numbered li::before {
   content: counter(item);
   counter-increment: item;
 }
-[data-numbered] textarea {
-  padding: var(--child-padding);
+.line-numbered textarea {
+  padding: 0.5ch;
   flex: 1;
-  background: var(--background);
   border: none;
+  border-radius: 0;
   white-space: pre;
   outline: none;
   resize: none;

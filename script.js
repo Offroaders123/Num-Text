@@ -1,19 +1,24 @@
-var numberedTextareas = Array.from(document.querySelectorAll("[data-numbered]"));
-numberedTextareas.forEach(function(numberedTextarea){
+var numberedTextareas = Array.from(document.querySelectorAll("[data-line-numbered]"));
+numberedTextareas.forEach(function(textarea){
   var container = document.createElement("span");
   var lineCount = document.createElement("ol");
-  var textarea = numberedTextarea;
   textarea.parentElement.insertBefore(container,textarea);
   container.appendChild(textarea);
   container.insertBefore(lineCount,textarea);
-  textarea.removeAttribute("data-numbered");
-  container.dataset.numbered = true;
+  textarea.removeAttribute("data-enable-line-numbers");
+  container.classList.add("line-numbered");
   updateLineCount();
   lineCount.addEventListener("click",function(){
     textarea.focus();
   });
   textarea.addEventListener("input",updateLineCount);
   textarea.addEventListener("scroll",function(){
+    var scrollbarHeight = textarea.offsetHeight - textarea.clientHeight;
+    if (scrollbarHeight > 0){
+      lineCount.style.paddingBottom = `${parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-bottom")) + scrollbarHeight}px`;
+    } else {
+      lineCount.style.removeProperty("padding-bottom");
+    }
     lineCount.scrollTop = textarea.scrollTop;
   });
   function updateLineCount(){
