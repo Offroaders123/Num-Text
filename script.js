@@ -11,11 +11,13 @@ linedContainers.forEach(function(container){
   var lineCount = document.createElement("ol");
   var textarea = container.getElementsByTagName("textarea")[0];
   container.insertBefore(lineCount,textarea);
-  updateLineCount();
+  updateLineCount(textarea);
   lineCount.addEventListener("click",function(){
     textarea.focus();
   });
-  textarea.addEventListener("input",updateLineCount);
+  textarea.addEventListener("input",function(){
+    updateLineCount(textarea);
+  });
   textarea.addEventListener("scroll",function(){
     var scrollbarHeight = textarea.offsetHeight - textarea.clientHeight;
     if (scrollbarHeight > 0){
@@ -25,27 +27,28 @@ linedContainers.forEach(function(container){
     }
     lineCount.scrollTop = textarea.scrollTop;
   });
-  function updateLineCount(){
-    var previousCount = textarea.dataset.rows;
-    if (previousCount == undefined){
-      previousCount = 0;
-    }
-    var currentCount = textarea.value.split("\n").length;
-    var countDifference = currentCount - previousCount;
-    if (countDifference != 0){
-      for (i = 0; i < Math.abs(countDifference); i++){
-        if (countDifference > 0){
-          lineCount.appendChild(document.createElement("li"));
-        }
-        if (countDifference < 0){
-          lineCount.lastChild.remove();
-        }
+});
+function updateLineCount(textarea){
+  var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
+  var previousCount = textarea.dataset.rows;
+  if (previousCount == undefined){
+    previousCount = 0;
+  }
+  var currentCount = textarea.value.split("\n").length;
+  var countDifference = currentCount - previousCount;
+  if (countDifference != 0){
+    for (i = 0; i < Math.abs(countDifference); i++){
+      if (countDifference > 0){
+        lineCount.appendChild(document.createElement("li"));
+      }
+      if (countDifference < 0){
+        lineCount.lastChild.remove();
       }
     }
-    textarea.dataset.rows = currentCount;
   }
-});
-function toggleLinedVisibility(element){
+  textarea.dataset.rows = currentCount;
+}
+function toggleLineCount(element){
   var currentState = element.dataset.linedHidden;
   if (currentState == undefined){
     element.dataset.linedHidden = true;
