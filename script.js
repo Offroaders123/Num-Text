@@ -21,7 +21,7 @@ linedContainers.forEach(function(container){
   textarea.addEventListener("scroll",function(){
     var scrollbarHeight = textarea.offsetHeight - textarea.clientHeight;
     if (scrollbarHeight > 0){
-      lineCount.style.paddingBottom = `${parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-bottom")) + scrollbarHeight}px`;
+      lineCount.style.paddingBottom = `${parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-top")) + scrollbarHeight}px`;
     } else {
       lineCount.style.removeProperty("padding-bottom");
     }
