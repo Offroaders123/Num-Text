@@ -1,42 +1,54 @@
-.line-numbered {
-  height: 8ch;
-  display: inline-flex;
-  vertical-align: top;
+[data-lined-container] {
+  height: 5.5ch;
   font-family: monospace;
   font-size: 13px;
   border: 1px solid #767676;
   overflow: hidden;
   resize: both;
 }
-.line-numbered:focus-within {
+div[data-lined-container] {
+  display: flex;
+}
+span[data-lined-container] {
+  display: inline-flex;
+  vertical-align: top;
+}
+[data-lined-container]:hover, [data-lined-container]:focus-within {
+  border-color: #3b3b3b;
+}
+[data-lined-container]:focus-within {
   outline: 2px solid;
   outline-offset: -1px;
 }
-.line-numbered * {
-  flex-shrink: 0;
+[data-lined-container] * {
   font-family: inherit;
   font-size: inherit;
 }
-.line-numbered ol {
+[data-lined-container] ol {
   counter-reset: item;
   margin: 0;
   padding: 0.5ch;
-  color: #767676;
+  color: #ffffff;
   text-align: right;
-  text-shadow: 0.1ch 0.1ch #ffffff;
-  background: #d3d3d3;
+  background: #0000005e;
   border-right: inherit;
   cursor: text;
   list-style: inside none;
   overflow: hidden;
 }
-.line-numbered li::before {
+[data-lined-container][data-lined-hidden] ol {
+  padding: 0;
+  width: 0;
+  border-width: 0;
+}
+[data-lined-container] li::before {
   content: counter(item);
   counter-increment: item;
 }
-.line-numbered textarea {
+[data-lined-container] textarea {
   padding: 0.5ch;
-  flex: 1;
+  flex-grow: 1;
+  background: transparent;
   border: none;
   border-radius: 0;
   white-space: pre;
