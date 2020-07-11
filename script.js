@@ -1,12 +1,16 @@
-var numberedTextareas = Array.from(document.querySelectorAll("[data-line-numbered]"));
-numberedTextareas.forEach(function(textarea){
+var linedAutomatics = document.querySelectorAll("[data-lined-automatic]");
+linedAutomatics.forEach(function(textarea){
   var container = document.createElement("span");
-  var lineCount = document.createElement("ol");
   textarea.parentElement.insertBefore(container,textarea);
   container.appendChild(textarea);
+  textarea.removeAttribute("data-lined-automatic");
+  container.dataset.linedContainer = true;
+});
+var linedContainers = Array.from(document.querySelectorAll("[data-lined-container]"));
+linedContainers.forEach(function(container){
+  var lineCount = document.createElement("ol");
+  var textarea = container.getElementsByTagName("textarea")[0];
   container.insertBefore(lineCount,textarea);
-  textarea.removeAttribute("data-enable-line-numbers");
-  container.classList.add("line-numbered");
   updateLineCount();
   lineCount.addEventListener("click",function(){
     textarea.focus();
@@ -41,3 +45,11 @@ numberedTextareas.forEach(function(textarea){
     textarea.dataset.rows = currentCount;
   }
 });
+function toggleLinedVisibility(element){
+  var currentState = element.dataset.linedHidden;
+  if (currentState == undefined){
+    element.dataset.linedHidden = true;
+  } else {
+    element.removeAttribute("data-lined-hidden");
+  }
+}
