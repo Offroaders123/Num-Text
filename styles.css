@@ -1,35 +1,38 @@
-[data-lined-container] {
+[data-numbered-container] {
   height: 5.5ch;
+  color: #000000;
   font-family: monospace;
   font-size: 13px;
-  color: #000000;
+  line-height: 1.2;
   background: #ffffff;
   border: 1px solid #767676;
   overflow: hidden;
   resize: both;
 }
-div[data-lined-container] {
+div[data-numbered-container] {
   display: flex;
 }
-span[data-lined-container] {
+span[data-numbered-container] {
   display: inline-flex;
   vertical-align: top;
 }
-[data-lined-container]:hover, [data-lined-container]:focus-within {
+[data-numbered-container]:hover, [data-numbered-container]:focus-within {
   border-color: #3b3b3b;
 }
-[data-lined-container]:focus-within {
+[data-numbered-container]:focus-within {
   outline: 2px solid #000000;
   outline-offset: -1px;
 }
-[data-lined-container] * {
+[data-numbered-container] * {
   font-family: inherit;
   font-size: inherit;
+  line-height: inherit;
 }
-[data-lined-container] ol {
+[data-numbered-container] ol {
   counter-reset: item;
   margin: 0;
   padding: 0.5ch;
+  flex-shrink: 0;
   color: #ffffff;
   text-align: right;
   background: #0000005e;
@@ -38,16 +41,16 @@ span[data-lined-container] {
   list-style: inside none;
   overflow: hidden;
 }
-[data-lined-container][data-lined-hidden] ol {
+[data-numbered-container][data-numbered-hidden] ol {
   padding: 0;
   width: 0;
   border-width: 0;
 }
-[data-lined-container] li::before {
+[data-numbered-container] li::before {
   content: counter(item);
   counter-increment: item;
 }
-[data-lined-container] textarea {
+[data-numbered-container] textarea {
   padding: 0.5ch;
   flex-grow: 1;
   color: inherit;

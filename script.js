@@ -1,13 +1,5 @@
-var linedAutomatics = document.querySelectorAll("[data-lined-automatic]");
-linedAutomatics.forEach(function(textarea){
-  var container = document.createElement("span");
-  textarea.parentElement.insertBefore(container,textarea);
-  container.appendChild(textarea);
-  textarea.removeAttribute("data-lined-automatic");
-  container.dataset.linedContainer = true;
-});
-var linedContainers = Array.from(document.querySelectorAll("[data-lined-container]"));
-linedContainers.forEach(function(container){
+var numberedContainers = Array.from(document.querySelectorAll("[data-numbered-container]"));
+numberedContainers.forEach(function(container){
   var lineCount = document.createElement("ol");
   var textarea = container.getElementsByTagName("textarea")[0];
   container.insertBefore(lineCount,textarea);
@@ -30,11 +22,15 @@ linedContainers.forEach(function(container){
 });
 function updateLineCount(textarea){
   var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
-  var previousCount = textarea.dataset.rows;
+  var previousCount = textarea.dataset.numberedRows;
   if (previousCount == undefined){
     previousCount = 0;
   }
-  var currentCount = textarea.value.split("\n").length;
+  textarea.style.padding = 0;
+  textarea.style.height = 0;
+  var currentCount = Math.floor(parseInt(textarea.scrollHeight) / parseInt(window.getComputedStyle(textarea).getPropertyValue("line-height")));
+  textarea.style.removeProperty("padding");
+  textarea.style.removeProperty("height");
   var countDifference = currentCount - previousCount;
   if (countDifference != 0){
     for (i = 0; i < Math.abs(countDifference); i++){
@@ -46,13 +42,5 @@ function updateLineCount(textarea){
       }
     }
   }
-  textarea.dataset.rows = currentCount;
-}
-function toggleLineCount(element){
-  var currentState = element.dataset.linedHidden;
-  if (currentState == undefined){
-    element.dataset.linedHidden = true;
-  } else {
-    element.removeAttribute("data-lined-hidden");
-  }
+  textarea.dataset.numberedRows = currentCount;
 }
