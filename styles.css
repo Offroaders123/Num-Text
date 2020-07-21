@@ -42,9 +42,7 @@ span[data-numbered-container] {
   overflow: hidden;
 }
 [data-numbered-container][data-numbered-hidden] ol {
-  padding: 0;
-  width: 0;
-  border-width: 0;
+  display: none;
 }
 [data-numbered-container] li::before {
   content: counter(item);
