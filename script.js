@@ -15,7 +15,7 @@ numberedContainers.forEach(function(container){
   });
 });
 function updateLineCount(textarea){
-  if (textarea.parentElement.hasAttribute("data-numbered-hidden") == false){console.log("Updated!");
+  if (textarea.parentElement.hasAttribute("data-numbered-hidden") == false){
     var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
     var previousCount = textarea.getAttribute("data-numbered-rows");
     if (previousCount == undefined){
@@ -47,11 +47,17 @@ function updateScrollPosition(textarea){
   }
   lineCount.scrollTop = textarea.scrollTop;
 }
+function enableLineCount(textarea){
+  textarea.parentElement.removeAttribute("data-numbered-hidden");
+  updateLineCount(textarea);
+}
+function disableLineCount(textarea){
+  textarea.parentElement.setAttribute("data-numbered-hidden",true);
+}
 function toggleLineCount(textarea){
   if (textarea.parentElement.hasAttribute("data-numbered-hidden")){
-    textarea.parentElement.removeAttribute("data-numbered-hidden");
-    updateLineCount(textarea);
+    enableLineCount(textarea);
   } else {
-    textarea.parentElement.setAttribute("data-numbered-hidden",true);
+    disableLineCount(textarea);
   }
 }
