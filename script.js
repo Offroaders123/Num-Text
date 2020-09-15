@@ -1,5 +1,8 @@
 var numberedContainers = Array.from(document.querySelectorAll("[data-numbered-container]"));
 numberedContainers.forEach(function(container){
+  establishNumberedContainer(container);
+});
+function establishNumberedContainer(container){
   var lineCount = document.createElement("ol");
   var textarea = container.getElementsByTagName("textarea")[0];
   container.insertBefore(lineCount,textarea);
@@ -13,7 +16,7 @@ numberedContainers.forEach(function(container){
   textarea.addEventListener("scroll",function(){
     updateScrollPosition(textarea);
   });
-});
+}
 function updateLineCount(textarea){
   if (textarea.parentElement.hasAttribute("data-numbered-hidden") == false){
     var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
