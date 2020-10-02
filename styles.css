@@ -55,7 +55,7 @@ span[data-numbered-container] {
   background: transparent;
   border: none;
   border-radius: 0;
-  white-space: pre;
+  white-space: nowrap;
   outline: none;
   resize: none;
 }
