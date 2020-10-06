@@ -19,34 +19,31 @@ function establishNumberedContainer(container){
       if (event.key == "Backspace" && start != 0) removedText = textarea.value.substring(start - 1,start);
       if (event.key == "Delete" && start != textarea.value.length) removedText = textarea.value.substring(start,start + 1);
     }
-    if (removedText.includes("\n")) updateLineCount(textarea);
+    if (removedText.includes("\n")) textarea.setAttribute("data-numbered-update",true);
+  });
+  textarea.addEventListener("keyup",function(){
+    if (!textarea.hasAttribute("data-numbered-update")) return;
+    updateLineCount(textarea);
+    textarea.removeAttribute("data-numbered-update");
   });
   textarea.addEventListener("scroll",function(){
     updateScrollPosition(textarea);
   });
 }
 function updateLineCount(textarea){
-  if (textarea.parentElement.hasAttribute("data-numbered-hidden") == false){
-    var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
-    var previousCount = textarea.getAttribute("data-numbered-rows");
-    if (previousCount == undefined){
-      previousCount = 0;
-    }
-    var currentCount = textarea.value.split("\n").length;
-    var countDifference = currentCount - previousCount;
-    if (countDifference != 0){
-      for (i = 0; i < Math.abs(countDifference); i++){
-        if (countDifference > 0){
-          lineCount.appendChild(document.createElement("li"));
-        }
-        if (countDifference < 0){
-          lineCount.lastChild.remove();
-        }
-      }
-    }
-    textarea.setAttribute("data-numbered-rows",currentCount);
-    updateScrollPosition(textarea);
+  if (textarea.parentElement.hasAttribute("data-numbered-hidden")) return;
+  var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
+  var previousCount = textarea.getAttribute("data-numbered-rows");
+  if (!previousCount) previousCount = 0;
+  var currentCount = textarea.value.split("\n").length;
+  var countDifference = currentCount - previousCount;
+  if (countDifference == 0) return;
+  for (i = 0; i < Math.abs(countDifference); i++){
+    if (countDifference > 0) lineCount.appendChild(document.createElement("li"));
+    if (countDifference < 0) lineCount.lastChild.remove();
   }
+  textarea.setAttribute("data-numbered-rows",currentCount);
+  updateScrollPosition(textarea);
 }
 function updateScrollPosition(textarea){
   var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
