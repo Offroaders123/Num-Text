@@ -21,6 +21,12 @@ function establishNumberedContainer(container){
     }
     if (event.key == "Enter" || removedText.includes("\n")) textarea.setAttribute("data-numbered-update",true);
   });
+  textarea.addEventListener("cut",function(){
+    textarea.setAttribute("data-numbered-update",true);
+  });
+  textarea.addEventListener("paste",function(){
+    textarea.setAttribute("data-numbered-update",true);
+  });
   textarea.addEventListener("input",function(){
     if (!textarea.hasAttribute("data-numbered-update")) return;
     updateLineCount(textarea);
