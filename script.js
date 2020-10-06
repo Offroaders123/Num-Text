@@ -11,17 +11,17 @@ function establishNumberedContainer(container){
     textarea.focus();
   });
   textarea.addEventListener("keydown",function(event){
-    if (event.key != "Backspace" && event.key != "Delete") return;
-    var removedText, start = textarea.selectionStart, end = textarea.selectionEnd, singleCharacter = (start == end);
+    if (event.key != "Enter" && event.key != "Backspace" && event.key != "Delete") return;
+    var removedText = "", start = textarea.selectionStart, end = textarea.selectionEnd, singleCharacter = (start == end);
     if (!singleCharacter){
       removedText = textarea.value.substring(start,end);
     } else {
       if (event.key == "Backspace" && start != 0) removedText = textarea.value.substring(start - 1,start);
       if (event.key == "Delete" && start != textarea.value.length) removedText = textarea.value.substring(start,start + 1);
     }
-    if (removedText.includes("\n")) textarea.setAttribute("data-numbered-update",true);
+    if (event.key == "Enter" || removedText.includes("\n")) textarea.setAttribute("data-numbered-update",true);
   });
-  textarea.addEventListener("keyup",function(){
+  textarea.addEventListener("input",function(){
     if (!textarea.hasAttribute("data-numbered-update")) return;
     updateLineCount(textarea);
     textarea.removeAttribute("data-numbered-update");
