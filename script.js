@@ -19,7 +19,7 @@ function establishNumberedContainer(container){
       if (event.key == "Backspace" && start != 0) removedText = textarea.value.substring(start - 1,start);
       if (event.key == "Delete" && start != textarea.value.length) removedText = textarea.value.substring(start,start + 1);
     }
-    if (removedText.includes("\n") updateLineCount(textarea);
+    if (removedText.includes("\n")) updateLineCount(textarea);
   });
   textarea.addEventListener("scroll",function(){
     updateScrollPosition(textarea);
