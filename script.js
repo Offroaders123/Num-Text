@@ -10,8 +10,16 @@ function establishNumberedContainer(container){
   lineCount.addEventListener("click",function(){
     textarea.focus();
   });
-  textarea.addEventListener("input",function(){
-    updateLineCount(textarea);
+  textarea.addEventListener("keydown",function(event){
+    if (event.key != "Backspace" && event.key != "Delete") return;
+    var removedText, start = textarea.selectionStart, end = textarea.selectionEnd, singleCharacter = (start == end);
+    if (!singleCharacter){
+      removedText = textarea.value.substring(start,end);
+    } else {
+      if (event.key == "Backspace" && start != 0) removedText = textarea.value.substring(start - 1,start);
+      if (event.key == "Delete" && start != textarea.value.length) removedText = textarea.value.substring(start,start + 1);
+    }
+    if (removedText.includes("\n") updateLineCount(textarea);
   });
   textarea.addEventListener("scroll",function(){
     updateScrollPosition(textarea);
