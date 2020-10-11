@@ -11,6 +11,9 @@ function establishNumberedContainer(container){
     textarea.focus();
   });
   textarea.addEventListener("keydown",function(event){
+    if ((event.ctrlKey || event.metaKey) && (event.key == "z" || event.key == "Z" || event.key == "y")){
+      textarea.setAttribute("data-numbered-update",true);
+    }
     if (event.key != "Enter" && event.key != "Backspace" && event.key != "Delete") return;
     var removedText = "", start = textarea.selectionStart, end = textarea.selectionEnd, singleCharacter = (start == end);
     if (!singleCharacter){
