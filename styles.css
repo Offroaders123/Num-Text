@@ -59,3 +59,10 @@ span[data-numbered-container] {
   outline: none;
   resize: none;
 }
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) and (stroke-color: transparent) {
+    [data-numbered-container] textarea {
+      white-space: nowrap;
+    }
+  }
+}
