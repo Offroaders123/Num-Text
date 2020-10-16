@@ -38,8 +38,8 @@ span[data-numbered-container] {
   text-align: right;
   background: #0000005e;
   border-right: inherit;
-  cursor: text;
   list-style: inside none;
+  cursor: text;
   overflow: hidden;
 }
 [data-numbered-container] ol::after {

@@ -3,8 +3,7 @@ numberedContainers.forEach(function(container){
   establishNumberedContainer(container);
 });
 function establishNumberedContainer(container){
-  var lineCount = document.createElement("ol");
-  var textarea = container.getElementsByTagName("textarea")[0];
+  var lineCount = document.createElement("ol"), textarea = container.getElementsByTagName("textarea")[0];
   container.insertBefore(lineCount,textarea);
   updateLineCount(textarea);
   lineCount.addEventListener("click",function(){
@@ -41,11 +40,9 @@ function establishNumberedContainer(container){
 }
 function updateLineCount(textarea){
   if (textarea.parentElement.hasAttribute("data-numbered-hidden")) return;
-  var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
-  var previousCount = textarea.getAttribute("data-numbered-rows");
+  var lineCount = textarea.parentElement.getElementsByTagName("ol")[0], previousCount = textarea.getAttribute("data-numbered-rows");
   if (!previousCount) previousCount = 0;
-  var currentCount = textarea.value.split("\n").length;
-  var countDifference = currentCount - previousCount;
+  var currentCount = textarea.value.split("\n").length, countDifference = currentCount - previousCount;
   if (countDifference == 0) return;
   for (i = 0; i < Math.abs(countDifference); i++){
     if (countDifference > 0) lineCount.appendChild(document.createElement("li"));
@@ -55,10 +52,7 @@ function updateLineCount(textarea){
   updateScrollPosition(textarea);
 }
 function updateScrollPosition(textarea){
-  var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
-  var scrollbarHeight = textarea.offsetHeight - textarea.clientHeight;
-  var paddingHeight = parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-top"));
-  var overflowOffset = parseInt(window.getComputedStyle(lineCount).getPropertyValue("--overflow-offset"));
+  var lineCount = textarea.parentElement.getElementsByTagName("ol")[0], scrollbarHeight = textarea.offsetHeight - textarea.clientHeight, paddingHeight = parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-top")), overflowOffset = parseInt(window.getComputedStyle(lineCount).getPropertyValue("--overflow-offset"));
   if (scrollbarHeight > 0){
     lineCount.style.setProperty("--overflow-offset",`${paddingHeight + scrollbarHeight}px`);
   } else {
