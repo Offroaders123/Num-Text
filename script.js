@@ -37,7 +37,7 @@ function establishNumberedContainer(container){
   });
   textarea.addEventListener("scroll",function(){
     updateScrollPosition(textarea);
-  });
+  },{ passive: true });
 }
 function updateLineCount(textarea){
   if (textarea.parentElement.hasAttribute("data-numbered-hidden")) return;
@@ -57,10 +57,12 @@ function updateLineCount(textarea){
 function updateScrollPosition(textarea){
   var lineCount = textarea.parentElement.getElementsByTagName("ol")[0];
   var scrollbarHeight = textarea.offsetHeight - textarea.clientHeight;
+  var paddingHeight = parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-top"));
+  var overflowOffset = parseInt(window.getComputedStyle(lineCount).getPropertyValue("--overflow-offset"));
   if (scrollbarHeight > 0){
-    lineCount.style.paddingBottom = `${parseInt(window.getComputedStyle(lineCount).getPropertyValue("padding-top")) + scrollbarHeight}px`;
+    lineCount.style.setProperty("--overflow-offset",`${paddingHeight + scrollbarHeight}px`);
   } else {
-    lineCount.style.removeProperty("padding-bottom");
+    lineCount.style.setProperty("--overflow-offset",`${paddingHeight}px`);
   }
   lineCount.scrollTop = textarea.scrollTop;
 }

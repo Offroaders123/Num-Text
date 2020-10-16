@@ -32,6 +32,7 @@ span[data-numbered-container] {
   counter-reset: item;
   margin: 0;
   padding: 0.5ch;
+  padding-bottom: 0;
   flex-shrink: 0;
   color: #ffffff;
   text-align: right;
@@ -40,6 +41,12 @@ span[data-numbered-container] {
   cursor: text;
   list-style: inside none;
   overflow: hidden;
+}
+[data-numbered-container] ol::after {
+  content: "";
+  width: 100%;
+  height: var(--overflow-offset);
+  display: inline-block;
 }
 [data-numbered-container][data-numbered-hidden] ol {
   display: none;
