@@ -6,22 +6,23 @@
   line-height: 1.2;
   background: #ffffff;
   border: 1px solid #767676;
+  outline: 2px solid transparent;
+  outline-offset: -1px;
   overflow: hidden;
-  resize: both;
+  cursor: text;
 }
 div[data-numbered-container] {
   display: flex;
 }
 span[data-numbered-container] {
   display: inline-flex;
-  vertical-align: top;
+  vertical-align: bottom;
 }
 [data-numbered-container]:hover, [data-numbered-container]:focus-within {
   border-color: #3b3b3b;
 }
 [data-numbered-container]:focus-within {
-  outline: 2px solid #000000;
-  outline-offset: -1px;
+  outline-color: #000000;
 }
 [data-numbered-container] * {
   font-family: inherit;
@@ -39,7 +40,6 @@ span[data-numbered-container] {
   background: #0000005e;
   border-right: inherit;
   list-style: inside none;
-  cursor: text;
   overflow: hidden;
 }
 [data-numbered-container] ol::after {
@@ -54,22 +54,24 @@ span[data-numbered-container] {
 [data-numbered-container] li::before {
   content: counter(item);
   counter-increment: item;
+  font-family: inherit;
 }
 [data-numbered-container] textarea {
+  margin: 0;
   padding: 0.5ch;
+  min-width: 4ch;
+  min-height: 4ch;
   flex-basis: 100%;
   color: inherit;
   background: transparent;
   border: none;
   border-radius: 0;
-  white-space: pre;
   outline: none;
-  resize: none;
+  cursor: inherit;
+  -webkit-appearance: none;
 }
-@media not all and (min-resolution: 0.001dpcm) {
-  @supports (-webkit-appearance: none) and (stroke-color: transparent) {
-    [data-numbered-container] textarea {
-      white-space: nowrap;
-    }
-  }
+[data-numbered-container] textarea::placeholder {
+  color: inherit;
+  opacity: 0.55;
+  white-space: pre-wrap;
 }
