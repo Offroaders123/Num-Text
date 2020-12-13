@@ -5,7 +5,7 @@ Element.prototype.num_establishContainer = function(){
   lineCount.addEventListener("mousedown",focusTextarea);
   lineCount.addEventListener("click",focusTextarea);
   textarea.wrap = "off";
-  textarea.addEventListener("keydown",function(event){
+  textarea.addEventListener("keydown",event => {
     if ((event.ctrlKey || event.metaKey) && (event.key == "z" || event.key == "Z" || event.key == "y")) textarea.setAttribute("data-numbered-refresh",true);
     if (event.key != "Enter" && event.key != "Backspace" && event.key != "Delete") return;
     var removedText = "", start = textarea.selectionStart, end = textarea.selectionEnd, singleCharacter = (start == end);
@@ -15,21 +15,15 @@ Element.prototype.num_establishContainer = function(){
     } else removedText = textarea.value.substring(start,end);
     if (event.key == "Enter" || removedText.includes("\n")) textarea.setAttribute("data-numbered-refresh",true);
   });
-  textarea.addEventListener("cut",function(){
-    textarea.setAttribute("data-numbered-refresh",true);
-  });
-  textarea.addEventListener("paste",function(){
-    textarea.setAttribute("data-numbered-refresh",true);
-  });
-  textarea.addEventListener("input",function(){
+  textarea.addEventListener("cut",() => textarea.setAttribute("data-numbered-refresh",true));
+  textarea.addEventListener("paste",() => textarea.setAttribute("data-numbered-refresh",true));
+  textarea.addEventListener("input",() => {
     if (!textarea.hasAttribute("data-numbered-refresh")) return;
     textarea.num_refreshLineCount();
     textarea.removeAttribute("data-numbered-refresh");
   });
-  textarea.addEventListener("scroll",function(){
-    textarea.num_refreshScrollPosition();
-  },{ passive: true });
-  new ResizeObserver(function(){
+  textarea.addEventListener("scroll",() => textarea.num_refreshScrollPosition(),{ passive: true });
+  new ResizeObserver(() => {
     if (textarea.parentElement != container) return console.error(`${textarea} is not within it's associated numbered container parent`,textarea,container);
     container.style.removeProperty("width");
     container.style.height = `${container.offsetHeight - container.clientHeight + parseInt(textarea.style.height.replace(/px/g,""))}px`;
