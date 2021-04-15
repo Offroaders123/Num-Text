@@ -10,7 +10,7 @@ class NumText extends HTMLElement {
     });
     this.styles = document.createElement("link");
     this.styles.rel = "stylesheet";
-    this.styles.href = "https://offroaders123.github.io/Numbered-Textarea-Plugin/styles.css";
+    this.styles.href = "https://offroaders123.github.io/Num-Text-Component/styles.css";
     this.container = document.createElement("div");
     this.container.part = "container";
     this.gutter = document.createElement("ol");
