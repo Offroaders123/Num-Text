@@ -1,3 +1,28 @@
+/* -- Configuring NumText to work with Prism --
+
+More files have to be downloaded and referenced in the head of your document than the standard NumText release to apply syntax highlighting support.
+Make sure to download the NumText "styles.css" file and place it in the same folder as your document.
+
+Feel free to add this directly to the head of your document:
+
+--------------------------------------------------------------------------------
+
+<template id="prism_styles"> (Optional, place your Prism theme styles here, inside of the style tag below. If this <template> is not present, all <num-text> elements will behave as if syntax highlighting was never added.)
+
+<style>
+  -- Prism styles placed here --
+</style>
+
+</template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
+
+<script src="script.js"></script> (This JS file)
+
+--------------------------------------------------------------------------------
+
+*/
+
 class NumText extends HTMLElement {
   constructor(){
     super();
@@ -10,7 +35,9 @@ class NumText extends HTMLElement {
     });
     this.styles = document.createElement("link");
     this.styles.rel = "stylesheet";
-    this.styles.href = "https://offroaders123.github.io/Num-Text-Component/styles.css";
+    this.styles.href = "styles.css";
+    this.prism_styles = document.createElement("style");
+    this.prism_styles.textContent = ("prism_theme" in window) ? document.querySelector("#prism_theme").content.querySelector("style").textContent : "";
     this.container = document.createElement("div");
     this.container.part = "container";
     this.gutter = document.createElement("ol");
@@ -34,6 +61,8 @@ class NumText extends HTMLElement {
     this.gutter.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
     this.content = document.createElement("div");
     this.content.part = "content";
+    this.syntax = document.createElement("pre");
+    this.syntax.part = "syntax";
     this.editor = document.createElement("textarea");
     this.editor.part = "editor";
     this.editor.placeholder = this.getAttribute("placeholder") || "";
@@ -53,8 +82,10 @@ class NumText extends HTMLElement {
     }).observe(this.editor);
     this.shadowRoot.appendChild(this.container);
     this.container.appendChild(this.styles);
+    this.container.appendChild(this.prism_styles);
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
+    this.content.appendChild(this.syntax);
     this.content.appendChild(this.editor);
     this.disabled = this.matches("[disabled]");
     this.editor.value = this.getAttribute("value") || "";
@@ -62,6 +93,9 @@ class NumText extends HTMLElement {
     this.refreshLineNumbers();
   }
   refreshLineNumbers(){
+    var tokened = this.editor.value;
+    if (tokened[tokened.length - 1] == "\n") tokened += "\n";
+    this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages.html,"html");
     var previousCount = this.editor.getAttribute("data-line-count") || 0,
       count = (this.editor.value.match(/\n/g) || []).length + 1,
       difference = count - previousCount;
@@ -97,6 +131,8 @@ class NumText extends HTMLElement {
       this.container.style.removeProperty("--overscroll-bottom");
     } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
     if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
+    if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
+    if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
   }
   get value(){
     return this.editor.value;
