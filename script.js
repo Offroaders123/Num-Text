@@ -32,6 +32,8 @@ class NumText extends HTMLElement {
     });
     this.gutter.addEventListener("contextmenu",event => event.preventDefault());
     this.gutter.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
+    this.content = document.createElement("div");
+    this.content.part = "content";
     this.editor = document.createElement("textarea");
     this.editor.part = "editor";
     this.editor.placeholder = this.getAttribute("placeholder") || "";
@@ -49,10 +51,11 @@ class NumText extends HTMLElement {
       this.editor.style.removeProperty("height");
       this.refreshScrollPosition();
     }).observe(this.editor);
-    this.shadowRoot.appendChild(this.styles);
     this.shadowRoot.appendChild(this.container);
+    this.container.appendChild(this.styles);
     this.container.appendChild(this.gutter);
-    this.container.appendChild(this.editor);
+    this.container.appendChild(this.content);
+    this.content.appendChild(this.editor);
     this.disabled = this.matches("[disabled]");
     this.editor.value = this.getAttribute("value") || "";
     this.editor.setSelectionRange(0,0);
@@ -74,15 +77,25 @@ class NumText extends HTMLElement {
     this.refreshScrollPosition();
   }
   refreshScrollPosition(){
-    var { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.editor;
-    var scrollbarHeight = offsetHeight - clientHeight, overscroll = (scrollTop < 0 || (clientHeight + scrollTop) > scrollHeight) ? (scrollTop < 0) ? scrollTop : (clientHeight + scrollTop) - scrollHeight : false;
+    var { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
+    var scrollbarWidth = offsetWidth - clientWidth,
+      scrollbarHeight = offsetHeight - clientHeight,
+      overscrollX = (scrollLeft < 0 || (clientWidth + scrollLeft) > scrollWidth) ? (scrollLeft < 0) ? scrollLeft : (clientWidth + scrollLeft) - scrollWidth : false,
+      overscrollY = (scrollTop < 0 || (clientHeight + scrollTop) > scrollHeight) ? (scrollTop < 0) ? scrollTop : (clientHeight + scrollTop) - scrollHeight : false;
+    if (scrollbarWidth > 0){
+      this.container.style.setProperty("--overflow-offset-x",`${scrollbarWidth}px`);
+    } else this.container.style.removeProperty("--overflow-offset-x");
     if (scrollbarHeight > 0){
-      this.gutter.style.setProperty("--overflow-offset",`${scrollbarHeight}px`);
-    } else this.gutter.style.removeProperty("--overflow-offset");
-    if (overscroll == false){
-      this.gutter.style.removeProperty("--overscroll-top");
-      this.gutter.style.removeProperty("--overscroll-bottom");
-    } else (overscroll < 0) ? this.gutter.style.setProperty("--overscroll-top",`${Math.abs(overscroll)}px`) : this.gutter.style.setProperty("--overscroll-bottom",`${overscroll}px`);
+      this.container.style.setProperty("--overflow-offset-y",`${scrollbarHeight}px`);
+    } else this.container.style.removeProperty("--overflow-offset-y");
+    if (overscrollX == false){
+      this.container.style.removeProperty("--overscroll-left");
+      this.container.style.removeProperty("--overscroll-right");
+    } else (overscrollX < 0) ? this.container.style.setProperty("--overscroll-left",`${Math.abs(overscrollX)}px`) : this.container.style.setProperty("--overscroll-right",`${overscrollX}px`);
+    if (overscrollY == false){
+      this.container.style.removeProperty("--overscroll-top");
+      this.container.style.removeProperty("--overscroll-bottom");
+    } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
     if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
   }
   get value(){
