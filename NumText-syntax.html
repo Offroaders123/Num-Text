@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+
+<title>NumText-syntax</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script>console.clear();</script>
+
+<template id="default_styles">
+
+<style>
+:host(num-text), *, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:host(num-text) {
+  --padding: 5px;
+  position: relative;
+  height: 60px;
+  display: inline-block;
+  vertical-align: bottom;
+  --color: #000000;
+  color: var(--color);
+  --selection-color: #0a0a0a;
+  --selection-background: #b4d5ffbf;
+  --selection-background-inactive: #ccccccbf;
+  font-size: 13px;
+  font-family: ui-monospace, "Cousine", "Consolas", monospace;
+  line-height: 1.3;
+  --background: #ffffff;
+  background: var(--background);
+  border: 1px solid #808080;
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: text;
+  --scrollbar-backdrop: var(--background);
+  user-select: none;
+  -webkit-user-select: none;
+  transition: 75ms;
+  transition-property: background-color, border-color, box-shadow;
+}
+:host(num-text:hover) {
+  border-color: #3b3b3b;
+}
+:host(num-text:focus-within) {
+  --background: #f1fbff;
+  border-color: #0050ff;
+  box-shadow: 0 0 0 3px #8bd0e6ad;
+}
+:host(num-text:-moz-window-inactive) {
+  --selection-background: var(--selection-background-inactive);
+}
+:host(num-text[disabled]) {
+  --background: #efefef;
+  border-color: #b0b0b0;
+  opacity: 0.65;
+  cursor: default;
+}
+[part="container"] {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+[part="gutter"] {
+  counter-reset: line-number;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  list-style: inside none;
+  overflow: hidden;
+}
+[part="line-number"]::before {
+  content: counter(line-number);
+  counter-increment: line-number;
+  padding: 0 calc(var(--padding) * 2);
+  display: block;
+  text-align: right;
+  opacity: 0.55;
+}
+[part="line-number"]:first-child::before {
+  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
+}
+[part="line-number"]:last-child {
+  flex-basis: 100%;
+}
+[part="line-number"]:last-child::before {
+  padding-bottom: calc(var(--padding) + var(--overscroll-bottom,0px));
+  height: 100%;
+}
+[part="line-number"]:last-child::after {
+  content: "";
+  display: block;
+  height: var(--overflow-offset-y,0px);
+}
+[part="content"] {
+  position: relative;
+  flex-basis: 100%;
+  display: flex;
+}
+[part="content"]::before, [part="content"]::after {
+  content: "";
+  position: absolute;
+  background: var(--scrollbar-backdrop);
+}
+[part="content"]::before {
+  right: 0;
+  top: 0;
+  width: var(--overflow-offset-x,0px);
+  height: 100%;
+  z-index: 1;
+}
+[part="content"]::after {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: var(--overflow-offset-y,0px);
+}
+[part="syntax"] {
+  padding-left: calc(var(--padding) + var(--overscroll-left,0px));
+  padding-right: calc(var(--padding) + var(--overflow-offset-x,0px) + var(--overscroll-right,0px));
+  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
+  padding-bottom: calc(var(--padding) + var(--overflow-offset-y,0px) + var(--overscroll-bottom,0px));
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+  overflow: hidden;
+}
+[part="editor"] {
+  padding: var(--padding);
+  min-width: 4ch;
+  min-height: 4ch;
+  flex-basis: 100%;
+  color: transparent;
+  caret-color: var(--color);
+  font-size: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  background: none;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  z-index: 1;
+  -webkit-appearance: none;
+}
+[part="editor"]::placeholder {
+  color: var(--color);
+  opacity: 0.55;
+  white-space: pre-wrap;
+}
+[part="editor"]::selection {
+  color: var(--selection-color);
+  background: var(--selection-background);
+}
+[part="editor"]::selection:window-inactive {
+  background: var(--selection-background-inactive);
+}
+</style>
+
+</template>
+
+<template id="prism_theme">
+
+<style>
+.token:is(.doctype,.comment) {/* Global, HTML Doctype */
+  opacity: 0.55;
+}
+.token:is(.tag) {/* HTML Tag */
+  color: #ff575a;
+}
+.token:is(.punctuation) {/* Global punctuation */
+  color: var(--color);
+  opacity: 0.55;
+}
+.token:is(.attr-name,.selector,.number,.boolean) {/* HTML attr-name, CSS selector, Global number, Global boolean */
+  color: #f1ac4d;
+}
+.token:is(.property) {/* CSS property */
+  opacity: 0.7;
+}
+.token:is(.attr-value,.string) {/* HTML attr-value, Global string */
+  color: #7eda79;
+}
+.token:is(.important) {/* CSS important */
+  color: #fbf760;
+}
+.token:is(.function) {/* CSS function, JS function */
+  color: #77bfff;
+}
+.token:is(.operator) {/* Global operator */
+  color: #60dcd1;
+}
+.token:is(.atrule,.keyword) {/* CSS @rule, JS Keyword */
+  color: #bf7afd;
+}
+</style>
+
+</template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
+
+<script>
+class NumText extends HTMLElement {
+  constructor(){
+    super();
+    this.attachShadow({ mode: "open" });
+  }
+  connectedCallback(){
+    this.addEventListener("mousedown",event => {
+      event.preventDefault();
+      if (document.activeElement != this.editor) this.editor.focus();
+    });
+    this.styles = document.createElement("style");
+    this.styles.textContent = document.querySelector("#default_styles").content.querySelector("style").textContent;
+    this.prism_styles = document.createElement("style");
+    this.prism_styles.textContent = ("prism_theme" in window) ? document.querySelector("#prism_theme").content.querySelector("style").textContent : "";
+    this.container = document.createElement("div");
+    this.container.part = "container";
+    this.gutter = document.createElement("ol");
+    this.gutter.part = "gutter";
+    this.gutter.addEventListener("mousedown",event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.button != 0) return;
+      var index = Array.from(this.gutter.children).indexOf(event.target);
+      var line = indexi("\n",this.editor.value)[index - 1];
+      this.editor.setSelectionRange(line,line);
+      this.editor.blur();
+      this.editor.focus();
+      function indexi(char,str){
+        var list = [], i = -1;
+        while ((i = str.indexOf(char,i + 1)) >= 0) list.push(i + 1);
+        return list;
+      }
+    });
+    this.gutter.addEventListener("contextmenu",event => event.preventDefault());
+    this.gutter.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
+    this.content = document.createElement("div");
+    this.content.part = "content";
+    this.syntax = document.createElement("pre");
+    this.syntax.part = "syntax";
+    this.editor = document.createElement("textarea");
+    this.editor.part = "editor";
+    this.editor.placeholder = this.getAttribute("placeholder") || "";
+    this.editor.wrap = "off";
+    this.editor.spellcheck = false;
+    this.editor.autocomplete = "off";
+    this.editor.autocapitalize = "off";
+    this.editor.setAttribute("autocorrect","off");
+    this.editor.addEventListener("mousedown",event => event.stopPropagation());
+    this.editor.addEventListener("input",() => this.refreshLineNumbers());
+    this.editor.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
+    new ResizeObserver(() => {
+      this.style.removeProperty("width");
+      this.style.height = `${this.offsetHeight - this.clientHeight + parseInt(this.editor.style.height,10)}px`;
+      this.editor.style.removeProperty("height");
+      this.refreshScrollPosition();
+    }).observe(this.editor);
+    this.shadowRoot.appendChild(this.container);
+    this.container.appendChild(this.styles);
+    this.container.appendChild(this.prism_styles);
+    this.container.appendChild(this.gutter);
+    this.container.appendChild(this.content);
+    this.content.appendChild(this.syntax);
+    this.content.appendChild(this.editor);
+    this.disabled = this.matches("[disabled]");
+    //this.editor.value = this.getAttribute("value") || "";
+    this.editor.value = `<!DOCTYPE html>\n${document.documentElement.outerHTML}`;
+    this.editor.setSelectionRange(0,0);
+    this.refreshLineNumbers();
+  }
+  refreshLineNumbers(){
+    var tokened = this.editor.value;
+    if (tokened[tokened.length - 1] == "\n") tokened += "\n";
+    this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages.html);
+    var previousCount = this.editor.getAttribute("data-line-count") || 0,
+      count = (this.editor.value.match(/\n/g) || []).length + 1,
+      difference = count - previousCount;
+    if (difference == 0) return;
+    if (difference > 0){
+      var fragment = new DocumentFragment(), lineNumber = document.createElement("li");
+      lineNumber.part = "line-number";
+      for (var i = 0; i < difference; i++) fragment.appendChild(lineNumber.cloneNode());
+      this.gutter.appendChild(fragment);
+    }
+    if (difference < 0) for (var i = 0; i < Math.abs(difference); i++) this.gutter.lastChild.remove();
+    this.editor.setAttribute("data-line-count",count);
+    this.refreshScrollPosition();
+  }
+  refreshScrollPosition(){
+    var { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
+    var scrollbarWidth = offsetWidth - clientWidth,
+      scrollbarHeight = offsetHeight - clientHeight,
+      overscrollX = (scrollLeft < 0 || (clientWidth + scrollLeft) > scrollWidth) ? (scrollLeft < 0) ? scrollLeft : (clientWidth + scrollLeft) - scrollWidth : false,
+      overscrollY = (scrollTop < 0 || (clientHeight + scrollTop) > scrollHeight) ? (scrollTop < 0) ? scrollTop : (clientHeight + scrollTop) - scrollHeight : false;
+    if (scrollbarWidth > 0){
+      this.container.style.setProperty("--overflow-offset-x",`${scrollbarWidth}px`);
+    } else this.container.style.removeProperty("--overflow-offset-x");
+    if (scrollbarHeight > 0){
+      this.container.style.setProperty("--overflow-offset-y",`${scrollbarHeight}px`);
+    } else this.container.style.removeProperty("--overflow-offset-y");
+    if (overscrollX == false){
+      this.container.style.removeProperty("--overscroll-left");
+      this.container.style.removeProperty("--overscroll-right");
+    } else (overscrollX < 0) ? this.container.style.setProperty("--overscroll-left",`${Math.abs(overscrollX)}px`) : this.container.style.setProperty("--overscroll-right",`${overscrollX}px`);
+    if (overscrollY == false){
+      this.container.style.removeProperty("--overscroll-top");
+      this.container.style.removeProperty("--overscroll-bottom");
+    } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
+    if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
+    if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
+    if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
+  }
+  get value(){
+    return this.editor.value;
+  }
+  set value(text){
+    var active = document.activeElement;
+    this.editor.focus();
+    this.editor.select();
+    document.execCommand("insertText",null,text);
+    active.focus();
+    return text;
+  }
+  get disabled(){
+    return this.editor.disabled;
+  }
+  set disabled(state){
+    (state) ? this.setAttribute("disabled",true) : this.removeAttribute("disabled");
+    this.editor.disabled = state;
+  }
+}
+window.customElements.define("num-text",NumText);
+</script>
+
+<style>
+  html {
+    width: 100%;
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    background: #141414;
+    overflow: hidden;
+  }
+  num-text {
+    --padding: 8px;
+    width: 100%;
+    height: 100%;
+    --color: #eaeaea;
+    line-height: 1.5;
+    --background: #222222;
+    border: none;
+    border-radius: none;
+    box-shadow: none;
+  }
+  num-text::part(editor) {
+    resize: none;
+  }
+</style>
+
+</head>
+
+<body>
+
+<num-text id="text_editor" placeholder="Syntax highlighting!"></num-text>
+
+</body>
+
+</html>

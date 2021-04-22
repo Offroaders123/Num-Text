@@ -1,0 +1,31 @@
+.token:is(.doctype,.comment) {/* Global, HTML Doctype */
+  opacity: 0.55;
+}
+.token:is(.tag) {/* HTML Tag */
+  color: #ff575a;
+}
+.token:is(.punctuation) {/* Global punctuation */
+  color: var(--color);
+  opacity: 0.55;
+}
+.token:is(.attr-name,.selector,.number,.boolean) {/* HTML attr-name, CSS selector, Global number, Global boolean */
+  color: #f1ac4d;
+}
+.token:is(.property) {/* CSS property */
+  opacity: 0.7;
+}
+.token:is(.attr-value,.string) {/* HTML attr-value, Global string */
+  color: #7eda79;
+}
+.token:is(.important) {/* CSS important */
+  color: #fbf760;
+}
+.token:is(.function) {/* CSS function, JS function */
+  color: #77bfff;
+}
+.token:is(.operator) {/* Global operator */
+  color: #60dcd1;
+}
+.token:is(.atrule,.keyword) {/* CSS @rule, JS Keyword */
+  color: #bf7afd;
+}
