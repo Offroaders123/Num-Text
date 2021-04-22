@@ -168,7 +168,7 @@
 <template id="prism_theme">
 
 <style>
-.token:is(.doctype,.comment) {/* Global, HTML Doctype */
+.token:is(.doctype,.comment) {/* HTML Doctype, Global comment */
   opacity: 0.55;
 }
 .token:is(.tag) {/* HTML Tag */
@@ -361,7 +361,7 @@ window.customElements.define("num-text",NumText);
     line-height: 1.5;
     --background: #222222;
     border: none;
-    border-radius: none;
+    border-radius: 0;
     box-shadow: none;
   }
   num-text::part(editor) {

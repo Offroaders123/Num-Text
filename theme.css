@@ -1,4 +1,4 @@
-.token:is(.doctype,.comment) {/* Global, HTML Doctype */
+.token:is(.doctype,.comment) {/* HTML Doctype, Global comment */
   opacity: 0.55;
 }
 .token:is(.tag) {/* HTML Tag */
