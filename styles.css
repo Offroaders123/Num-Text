@@ -86,6 +86,7 @@
   position: relative;
   flex-basis: 100%;
   display: flex;
+  overflow: hidden;
 }
 [part="content"]::before, [part="content"]::after {
   content: "";
