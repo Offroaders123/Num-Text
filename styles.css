@@ -84,6 +84,8 @@
 }
 [part="content"] {
   position: relative;
+  min-width: 4ch;
+  min-height: 4ch;
   flex-basis: 100%;
   display: flex;
   overflow: hidden;
@@ -121,8 +123,6 @@
 }
 [part="editor"] {
   padding: var(--padding);
-  min-width: 4ch;
-  min-height: 4ch;
   flex-basis: 100%;
   color: transparent;
   caret-color: var(--color);
