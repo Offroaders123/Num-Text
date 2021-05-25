@@ -25,18 +25,21 @@
   vertical-align: bottom;
   --color: #000000;
   color: var(--color);
-  --selection-color: #0a0a0a;
-  --selection-background: #b4d5ffbf;
-  --selection-background-inactive: #ccccccbf;
+  --selection-color: transparent;
+  --selection-background: #b4d5ff28;
+  --selection-background-inactive: #cccccc28;
   font-size: 13px;
   font-family: ui-monospace, "Cousine", "Consolas", monospace;
-  line-height: 1.3;
+  line-height: 1.4;
   --background: #ffffff;
   background: var(--background);
   border: 1px solid #808080;
   border-radius: 3px;
   overflow: hidden;
   cursor: text;
+  --scrollbar-width: 16px;
+  --scrollbar-height: 16px;
+  --scrollbar-border-width: 4px;
   --scrollbar-backdrop: var(--background);
   user-select: none;
   -webkit-user-select: none;
@@ -133,13 +136,50 @@
   font-family: inherit;
   overflow: hidden;
 }
+[part="selection"] {
+  padding-left: calc(var(--padding) + var(--overscroll-left,0px));
+  padding-right: calc(var(--padding) + var(--overflow-offset-x,0px) + var(--overscroll-right,0px));
+  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
+  padding-bottom: calc(var(--padding) + var(--overflow-offset-y,0px) + var(--overscroll-bottom,0px));
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  color: transparent;
+  font-family: inherit;
+  overflow: hidden;
+}
+[part="::selection"] {
+  padding: 2px 0;
+  color: var(--selection-color);
+  background: var(--selection-background);
+}
+:host(num-text:not(:focus-within)) [part="::selection"] {
+  color: var(--selection-color-inactive);
+  background: var(--selection-background-inactive);
+}
+:host(num-text:focus-within) [part="selection"].collapsed [part="::selection"] {
+  margin-left: -0.5px;
+  padding: 0 0.5px;
+  background: var(--color);
+  animation: caret 1000ms steps(1,end) infinite;
+}
+@keyframes caret {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
 [part="editor"] {
   padding: var(--padding);
   min-width: 4ch;
   min-height: 4ch;
   flex-basis: 100%;
   color: transparent;
-  caret-color: var(--color);
+  caret-color: transparent;
   font-size: inherit;
   font-family: inherit;
   line-height: inherit;
@@ -156,12 +196,33 @@
   white-space: pre-wrap;
 }
 [part="editor"]::selection {
-  color: var(--selection-color);
-  background: var(--selection-background);
+  color: transparent;
+  background: transparent;
 }
 [part="editor"]::selection:window-inactive {
   background: var(--selection-background-inactive);
 }
+
+/* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-height);
+  }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner {
+    background: none;
+  }
+  ::-webkit-scrollbar-thumb {
+    width: 36px;
+    height: 36px;
+    background: #808080;
+    background-clip: content-box;
+    border: var(--scrollbar-border-width) solid transparent;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #a0a0a0;
+  }
+
 </style>
 
 </template>
@@ -213,6 +274,16 @@ class NumText extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
   connectedCallback(){
+    document.addEventListener("selectionchange",() => {
+      if (document.activeElement != this) return;
+      var tokened = this.editor.value;
+      if (tokened[tokened.length - 1] == "\n") tokened += "\n";
+      this.selection.innerHTML = `${format(tokened.substring(0,this.editor.selectionStart))}<span part="::selection">${format(tokened.substring(this.editor.selectionStart,this.editor.selectionEnd))}</span>${format(tokened.substring(this.editor.selectionEnd))}`;
+      (this.editor.selectionStart == this.editor.selectionEnd) ? this.selection.classList.add("collapsed") : this.selection.classList.remove("collapsed");
+      function format(content){
+        return content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g," \n");
+      }
+    });
     this.addEventListener("mousedown",event => {
       event.preventDefault();
       if (document.activeElement != this.editor) this.editor.focus();
@@ -246,6 +317,8 @@ class NumText extends HTMLElement {
     this.content.part = "content";
     this.syntax = document.createElement("pre");
     this.syntax.part = "syntax";
+    this.selection = document.createElement("pre");
+    this.selection.part = "selection";
     this.editor = document.createElement("textarea");
     this.editor.part = "editor";
     this.editor.placeholder = this.getAttribute("placeholder") || "";
@@ -269,6 +342,7 @@ class NumText extends HTMLElement {
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
+    this.content.appendChild(this.selection);
     this.content.appendChild(this.editor);
     this.disabled = this.matches("[disabled]");
     //this.editor.value = this.getAttribute("value") || "";
@@ -318,6 +392,8 @@ class NumText extends HTMLElement {
     if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
     if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
     if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
+    if (this.selection.scrollLeft != this.editor.scrollLeft) this.selection.scrollLeft = this.editor.scrollLeft;
+    if (this.selection.scrollTop != this.editor.scrollTop) this.selection.scrollTop = this.editor.scrollTop;
   }
   get value(){
     return this.editor.value;
@@ -356,7 +432,7 @@ window.customElements.define("num-text",NumText);
     overflow: hidden;
   }
   num-text {
-    --padding: 8px;
+    --padding: 8px;width: 470px;height: 680px;
     width: 100%;
     height: 100%;
     --color: #eaeaea;
