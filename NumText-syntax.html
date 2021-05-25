@@ -6,6 +6,8 @@
 <title>NumText-syntax</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap">
 
 <script>console.clear();</script>
 
@@ -43,6 +45,7 @@
   --scrollbar-backdrop: var(--background);
   user-select: none;
   -webkit-user-select: none;
+  -webkit-text-size-adjust: 100%;
   transition: 75ms;
   transition-property: background-color, border-color, box-shadow;
 }
@@ -151,7 +154,7 @@
   overflow: hidden;
 }
 [part="::selection"] {
-  padding: 2px 0;
+  padding: 0.6px 0;
   color: var(--selection-color);
   background: var(--selection-background);
 }
@@ -233,18 +236,18 @@
 .token:is(.doctype,.comment) {/* HTML Doctype, Global comment */
   opacity: 0.55;
 }
-.token:is(.tag) {/* HTML Tag */
+.token:is(.tag,.regex) {/* HTML Tag, RegEx */
   color: #ff575a;
 }
 .token:is(.punctuation) {/* Global punctuation */
   color: var(--color);
-  opacity: 0.55;
+  opacity: 0.7;
 }
 .token:is(.attr-name,.selector,.number,.boolean) {/* HTML attr-name, CSS selector, Global number, Global boolean */
   color: #f1ac4d;
 }
 .token:is(.property) {/* CSS property */
-  opacity: 0.7;
+  opacity: 0.85;
 }
 .token:is(.attr-value,.string) {/* HTML attr-value, Global string */
   color: #7eda79;
@@ -266,6 +269,7 @@
 </template>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
 
 <script>
 class NumText extends HTMLElement {
@@ -274,16 +278,7 @@ class NumText extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
   connectedCallback(){
-    document.addEventListener("selectionchange",() => {
-      if (document.activeElement != this) return;
-      var tokened = this.editor.value;
-      if (tokened[tokened.length - 1] == "\n") tokened += "\n";
-      this.selection.innerHTML = `${format(tokened.substring(0,this.editor.selectionStart))}<span part="::selection">${format(tokened.substring(this.editor.selectionStart,this.editor.selectionEnd))}</span>${format(tokened.substring(this.editor.selectionEnd))}`;
-      (this.editor.selectionStart == this.editor.selectionEnd) ? this.selection.classList.add("collapsed") : this.selection.classList.remove("collapsed");
-      function format(content){
-        return content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g," \n");
-      }
-    });
+    document.addEventListener("selectionchange",() => this.refreshSelectionOverlay());
     this.addEventListener("mousedown",event => {
       event.preventDefault();
       if (document.activeElement != this.editor) this.editor.focus();
@@ -348,13 +343,13 @@ class NumText extends HTMLElement {
     //this.editor.value = this.getAttribute("value") || "";
     //this.editor.value = `<!DOCTYPE html>\n${document.documentElement.outerHTML}`;
     this.editor.value = decodeURI(`%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang=%22${navigator.language}%22%3E%0A%0A%3Chead%3E%0A%0A%3Ctitle%3E%3C/title%3E%0A%3Cmeta%20charset=%22UTF-8%22%3E%0A%3Cmeta%20name=%22viewport%22%20content=%22width=device-width,%20initial-scale=1%22%3E%0A%0A%3Cstyle%3E%0A%20%20*,%20*::before,%20*::after%20%7B%0A%20%20%20%20box-sizing:%20border-box;%0A%20%20%7D%0A%20%20body%20%7B%0A%20%20%20%20font-family:%20sans-serif;%0A%20%20%7D%0A%3C/style%3E%0A%0A%3C/head%3E%0A%0A%3Cbody%3E%0A%0A%3Cscript%3E%0A%3C/script%3E%0A%0A%3C/body%3E%0A%0A%3C/html%3E`);
+    //this.editor.value = decodeURI(`%7B%0A%20%20%22format_version%22:%202,%0A%0A%20%20%22header%22:%20%7B%0A%20%20%20%20%22name%22:%20%22Pack%20Manifest%20Template%20-%20Bedrock%20Edition%22,%0A%20%20%20%20%22description%22:%20%22Your%20resource%20pack%20description%22,%0A%20%20%20%20%22uuid%22:%20%22${window.parent.Tools.uuidGenerator.generate()}%22,%0A%20%20%20%20%22version%22:%20%5B%201,%200,%200%20%5D,%0A%20%20%20%20%22min_engine_version%22:%20%5B%201,%2013,%200%20%5D%0A%20%20%7D,%0A%20%20%22modules%22:%20%5B%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%22description%22:%20%22Your%20resource%20pack%20description%22,%0A%20%20%20%20%20%20%22type%22:%20%22resources%22,%0A%20%20%20%20%20%20%22uuid%22:%20%22${window.parent.Tools.uuidGenerator.generate()}%22,%0A%20%20%20%20%20%20%22version%22:%20%5B%201,%200,%200%20%5D%0A%20%20%20%20%7D%0A%20%20%5D,%0A%20%20%22metadata%22:%20%7B%0A%20%20%20%20%22authors%22:%20%5B%0A%20%20%20%20%20%20%22Add%20author%20names%20here%20(optional,%20'metadata'%20can%20be%20removed%20altogether)%22%0A%20%20%20%20%5D%0A%20%20%7D%0A%7D`);
     this.editor.setSelectionRange(0,0);
     this.refreshLineNumbers();
   }
   refreshLineNumbers(){
-    var tokened = this.editor.value;
-    if (tokened[tokened.length - 1] == "\n") tokened += "\n";
-    this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages.html);
+    this.refreshSyntaxOverlay();
+    this.refreshSelectionOverlay();
     var previousCount = this.editor.getAttribute("data-line-count") || 0,
       count = (this.editor.value.match(/\n/g) || []).length + 1,
       difference = count - previousCount;
@@ -369,7 +364,27 @@ class NumText extends HTMLElement {
     this.editor.setAttribute("data-line-count",count);
     this.refreshScrollPosition();
   }
+  refreshSyntaxOverlay(){
+    var tokened = this.editor.value;
+    if (tokened[tokened.length - 1] == "\n") tokened += "\n";
+    this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages.html);
+  }
+  refreshSelectionOverlay(){
+    if (document.activeElement != this) return;
+    var tokened = this.editor.value;
+    if (tokened[tokened.length - 1] == "\n") tokened += "\n";
+    this.selection.innerHTML = `${format(tokened.substring(0,this.editor.selectionStart))}<span part="::selection">${format(tokened.substring(this.editor.selectionStart,this.editor.selectionEnd))}</span>${format(tokened.substring(this.editor.selectionEnd))}`;
+    (this.editor.selectionStart == this.editor.selectionEnd) ? this.selection.classList.add("collapsed") : this.selection.classList.remove("collapsed");
+    function format(content){
+      return content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g," \n");
+    }
+  }
   refreshScrollPosition(){
+    if (this.scroll_request) window.cancelAnimationFrame(this.scroll_request);
+    this.scroll_request = window.requestAnimationFrame(() => {
+
+    this.scroll_request = undefined;
+
     var { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
     var scrollbarWidth = offsetWidth - clientWidth,
       scrollbarHeight = offsetHeight - clientHeight,
@@ -394,6 +409,8 @@ class NumText extends HTMLElement {
     if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
     if (this.selection.scrollLeft != this.editor.scrollLeft) this.selection.scrollLeft = this.editor.scrollLeft;
     if (this.selection.scrollTop != this.editor.scrollTop) this.selection.scrollTop = this.editor.scrollTop;
+
+    });
   }
   get value(){
     return this.editor.value;
@@ -436,6 +453,7 @@ window.customElements.define("num-text",NumText);
     width: 100%;
     height: 100%;
     --color: #eaeaea;
+    font-family: /*"Cousine"*/"Fira Code";
     line-height: 1.5;
     --background: #222222;
     border: none;
