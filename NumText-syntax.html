@@ -22,14 +22,14 @@
 :host(num-text) {
   --padding: 5px;
   position: relative;
-  height: 60px;
+  height: 80px;
   display: inline-block;
   vertical-align: bottom;
   --color: #000000;
   color: var(--color);
-  --selection-color: transparent;
-  --selection-background: #b4d5ff28;
-  --selection-background-inactive: #cccccc28;
+  --selection-color: inherit;
+  --selection-background: #75b1ff38;
+  --selection-background-inactive: #a1a1a138;
   font-size: 13px;
   font-family: ui-monospace, "Cousine", "Consolas", monospace;
   line-height: 1.4;
@@ -139,50 +139,13 @@
   font-family: inherit;
   overflow: hidden;
 }
-[part="selection"] {
-  padding-left: calc(var(--padding) + var(--overscroll-left,0px));
-  padding-right: calc(var(--padding) + var(--overflow-offset-x,0px) + var(--overscroll-right,0px));
-  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
-  padding-bottom: calc(var(--padding) + var(--overflow-offset-y,0px) + var(--overscroll-bottom,0px));
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  color: transparent;
-  font-family: inherit;
-  overflow: hidden;
-}
-[part="::selection"] {
-  padding: 0.6px 0;
-  color: var(--selection-color);
-  background: var(--selection-background);
-}
-:host(num-text:not(:focus-within)) [part="::selection"] {
-  color: var(--selection-color-inactive);
-  background: var(--selection-background-inactive);
-}
-:host(num-text:focus-within) [part="selection"].collapsed [part="::selection"] {
-  margin-left: -0.5px;
-  padding: 0 0.5px;
-  background: var(--color);
-  animation: caret 1000ms steps(1,end) infinite;
-}
-@keyframes caret {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-}
 [part="editor"] {
   padding: var(--padding);
   min-width: 4ch;
   min-height: 4ch;
   flex-basis: 100%;
   color: transparent;
-  caret-color: transparent;
+  caret-color: var(--color);
   font-size: inherit;
   font-family: inherit;
   line-height: inherit;
@@ -199,8 +162,8 @@
   white-space: pre-wrap;
 }
 [part="editor"]::selection {
-  color: transparent;
-  background: transparent;
+  color: var(--selection-color);
+  background: var(--selection-background);
 }
 [part="editor"]::selection:window-inactive {
   background: var(--selection-background-inactive);
@@ -278,7 +241,6 @@ class NumText extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
   connectedCallback(){
-    document.addEventListener("selectionchange",() => this.refreshSelectionOverlay());
     this.addEventListener("mousedown",event => {
       event.preventDefault();
       if (document.activeElement != this.editor) this.editor.focus();
@@ -312,8 +274,6 @@ class NumText extends HTMLElement {
     this.content.part = "content";
     this.syntax = document.createElement("pre");
     this.syntax.part = "syntax";
-    this.selection = document.createElement("pre");
-    this.selection.part = "selection";
     this.editor = document.createElement("textarea");
     this.editor.part = "editor";
     this.editor.placeholder = this.getAttribute("placeholder") || "";
@@ -337,7 +297,6 @@ class NumText extends HTMLElement {
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
-    this.content.appendChild(this.selection);
     this.content.appendChild(this.editor);
     this.disabled = this.matches("[disabled]");
     //this.editor.value = this.getAttribute("value") || "";
@@ -349,7 +308,6 @@ class NumText extends HTMLElement {
   }
   refreshLineNumbers(){
     this.refreshSyntaxOverlay();
-    this.refreshSelectionOverlay();
     var previousCount = this.editor.getAttribute("data-line-count") || 0,
       count = (this.editor.value.match(/\n/g) || []).length + 1,
       difference = count - previousCount;
@@ -368,16 +326,6 @@ class NumText extends HTMLElement {
     var tokened = this.editor.value;
     if (tokened[tokened.length - 1] == "\n") tokened += "\n";
     this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages.html);
-  }
-  refreshSelectionOverlay(){
-    if (document.activeElement != this) return;
-    var tokened = this.editor.value;
-    if (tokened[tokened.length - 1] == "\n") tokened += "\n";
-    this.selection.innerHTML = `${format(tokened.substring(0,this.editor.selectionStart))}<span part="::selection">${format(tokened.substring(this.editor.selectionStart,this.editor.selectionEnd))}</span>${format(tokened.substring(this.editor.selectionEnd))}`;
-    (this.editor.selectionStart == this.editor.selectionEnd) ? this.selection.classList.add("collapsed") : this.selection.classList.remove("collapsed");
-    function format(content){
-      return content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g," \n");
-    }
   }
   refreshScrollPosition(){
     if (this.scroll_request) window.cancelAnimationFrame(this.scroll_request);
@@ -407,8 +355,6 @@ class NumText extends HTMLElement {
     if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
     if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
     if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
-    if (this.selection.scrollLeft != this.editor.scrollLeft) this.selection.scrollLeft = this.editor.scrollLeft;
-    if (this.selection.scrollTop != this.editor.scrollTop) this.selection.scrollTop = this.editor.scrollTop;
 
     });
   }
@@ -434,7 +380,7 @@ class NumText extends HTMLElement {
 window.customElements.define("num-text",NumText);
 </script>
 
-<style>
+<style>/*
   html {
     width: 100%;
     height: 100%;
@@ -447,11 +393,11 @@ window.customElements.define("num-text",NumText);
     display: flex;
     background: #141414;
     overflow: hidden;
-  }
+  }*/
   num-text {
     --padding: 8px;width: 470px;height: 680px;
-    width: 100%;
-    height: 100%;
+    //width: 100%;
+    //height: 100%;
     --color: #eaeaea;
     font-family: /*"Cousine"*/"Fira Code";
     line-height: 1.5;
@@ -461,7 +407,7 @@ window.customElements.define("num-text",NumText);
     box-shadow: none;
   }
   num-text::part(editor) {
-    resize: none;
+    //resize: none;
   }
 </style>
 
