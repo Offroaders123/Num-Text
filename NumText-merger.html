@@ -3,45 +3,48 @@
 
 <head>
 
-<title>NumText-syntax</title>
+<title>NumText-merger</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.gstatic.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap">
-
-<script>console.clear();</script>
-
-<template id="default_styles">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
 
 <style>
+  body {
+    margin: 0;
+    padding: 0 18px;
+    font-family: system-ui, sans-serif;
+  }
+</style>
+
+<template id="shadow_styles">
+
+<style num-text-theme="default">
 :host(num-text), *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 :host(num-text) {
-  --padding: 5px;
+  --padding: 6px;
   position: relative;
-  height: 80px;
+  height: 70px;width: 400px;height: 500px;
   display: inline-block;
   vertical-align: bottom;
   --color: #000000;
   color: var(--color);
-  --selection-color: inherit;
-  --selection-background: #75b1ff38;
-  --selection-background-inactive: #a1a1a138;
   font-size: 13px;
   font-family: ui-monospace, "Cousine", "Consolas", monospace;
   line-height: 1.4;
+  --selection-color: inherit;
+  --selection-background: #75b1ff38;
+  --selection-background-inactive: #a1a1a138;
   --background: #ffffff;
   background: var(--background);
   border: 1px solid #808080;
   border-radius: 3px;
   overflow: hidden;
   cursor: text;
-  --scrollbar-width: 16px;
-  --scrollbar-height: 16px;
-  --scrollbar-border-width: 4px;
   --scrollbar-backdrop: var(--background);
   user-select: none;
   -webkit-user-select: none;
@@ -82,7 +85,8 @@
 [part="line-number"]::before {
   content: counter(line-number);
   counter-increment: line-number;
-  padding: 0 calc(var(--padding) * 2);
+  --padding-multiplier: 2;
+  padding: 0 calc(var(--padding) * var(--padding-multiplier));
   display: block;
   text-align: right;
   opacity: 0.55;
@@ -104,6 +108,8 @@
 }
 [part="content"] {
   position: relative;
+  min-width: 4ch;
+  min-height: 4ch;
   flex-basis: 100%;
   display: flex;
   overflow: hidden;
@@ -139,12 +145,13 @@
   font-family: inherit;
   overflow: hidden;
 }
+:host(num-text:not([syntax-highlight])) [part="syntax"] {
+  display: none;
+}
 [part="editor"] {
   padding: var(--padding);
-  min-width: 4ch;
-  min-height: 4ch;
   flex-basis: 100%;
-  color: transparent;
+  color: var(--color);
   caret-color: var(--color);
   font-size: inherit;
   font-family: inherit;
@@ -154,6 +161,7 @@
   border-radius: 0;
   outline: none;
   z-index: 1;
+  appearance: none;
   -webkit-appearance: none;
 }
 [part="editor"]::placeholder {
@@ -168,34 +176,17 @@
 [part="editor"]::selection:window-inactive {
   background: var(--selection-background-inactive);
 }
-
-/* Custom scrollbar styles */
-  ::-webkit-scrollbar {
-    width: var(--scrollbar-width);
-    height: var(--scrollbar-height);
-  }
-  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner {
-    background: none;
-  }
-  ::-webkit-scrollbar-thumb {
-    width: 36px;
-    height: 36px;
-    background: #808080;
-    background-clip: content-box;
-    border: var(--scrollbar-border-width) solid transparent;
-    border-radius: 10px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #a0a0a0;
-  }
-
+:host(num-text[syntax-highlight]) [part="editor"] {
+  color: transparent;
+}
 </style>
 
-</template>
-
-<template id="prism_theme">
-
-<style>
+<style num-text-theme="default-highlighting">
+/* Prism Styles */
+:host(num-text) {
+  --color: #eaeaea;
+  --background: #242424;
+}
 .token:is(.doctype,.comment) {/* HTML Doctype, Global comment */
   opacity: 0.55;
 }
@@ -231,44 +222,92 @@
 
 </template>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
+</head>
 
-<script>
+<body>
+
+<h1>NumText-merger</h1>
+
+<num-text id="code" syntax-highlight syntax-language="json" placeholder="Temp..." value='{
+  "name": true,
+  "pancakes": "sweet-towels"
+}'></num-text>
+
+<script>console.clear();
+window.NumTextInterface = {
+  themes: {
+    entries: {},
+    add: ({ name, type = "any", content = "" } = {}) => {
+      var stylesheet = document.createElement("style");
+      stylesheet.setAttribute("num-text-theme",name);
+      stylesheet.setAttribute("num-text-theme-type",type);
+      stylesheet.textContent = content;
+      NumTextInterface.themes.entries[name] = { type, stylesheet };
+    },
+    remove: ({ name } = {}) => {
+      delete NumTextInterface.themes.entries[name];
+    }
+  }
+};
+NumTextInterface.themes.add({
+  name: "default",
+  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default']").textContent
+});
+NumTextInterface.themes.add({
+  name: "default-highlighting",
+  type: "syntax-highlight",
+  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-highlighting']").textContent
+});
 class NumText extends HTMLElement {
   constructor(){
     super();
     this.attachShadow({ mode: "open" });
+    this.themes = {
+      entries: {},
+      add: name => {
+        var { type, stylesheet } = NumTextInterface.themes.entries[name];
+        this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true) };
+        this.container.appendChild(this.themes.entries[name].stylesheet);
+      },
+      remove: name => {
+        this.container.removeChild(this.themes.entries[name].stylesheet);
+        delete this.themes.entries[name];
+      }
+    };
+    this.syntaxHighlight = {
+      enable: () => {
+        this.setAttribute("syntax-highlight",true);
+      },
+      disable: () => {
+        this.removeAttribute("syntax-highlight");
+      },
+      language: language => {
+        this.setAttribute("syntax-language",language);
+        this.refreshLineNumbers();
+      }
+    };
   }
   connectedCallback(){
     this.addEventListener("mousedown",event => {
-      event.preventDefault();
       if (document.activeElement != this.editor) this.editor.focus();
     });
-    this.styles = document.createElement("style");
-    this.styles.textContent = document.querySelector("#default_styles").content.querySelector("style").textContent;
-    this.prism_styles = document.createElement("style");
-    this.prism_styles.textContent = ("prism_theme" in window) ? document.querySelector("#prism_theme").content.querySelector("style").textContent : "";
     this.container = document.createElement("div");
     this.container.part = "container";
     this.gutter = document.createElement("ol");
     this.gutter.part = "gutter";
     this.gutter.addEventListener("mousedown",event => {
       event.preventDefault();
-      event.stopPropagation();
       if (event.button != 0) return;
       var index = Array.from(this.gutter.children).indexOf(event.target);
       var line = indexi("\n",this.editor.value)[index - 1];
       this.editor.setSelectionRange(line,line);
       this.editor.blur();
-      this.editor.focus();
       function indexi(char,str){
         var list = [], i = -1;
         while ((i = str.indexOf(char,i + 1)) >= 0) list.push(i + 1);
         return list;
       }
     });
-    this.gutter.addEventListener("contextmenu",event => event.preventDefault());
     this.gutter.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
     this.content = document.createElement("div");
     this.content.part = "content";
@@ -292,23 +331,20 @@ class NumText extends HTMLElement {
       this.refreshScrollPosition();
     }).observe(this.editor);
     this.shadowRoot.appendChild(this.container);
-    this.container.appendChild(this.styles);
-    this.container.appendChild(this.prism_styles);
+    this.themes.add("default");
+    this.themes.add("default-highlighting");
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
     this.content.appendChild(this.editor);
     this.disabled = this.matches("[disabled]");
-    //this.editor.value = this.getAttribute("value") || "";
-    //this.editor.value = `<!DOCTYPE html>\n${document.documentElement.outerHTML}`;
-    this.editor.value = decodeURI(`%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang=%22${navigator.language}%22%3E%0A%0A%3Chead%3E%0A%0A%3Ctitle%3E%3C/title%3E%0A%3Cmeta%20charset=%22UTF-8%22%3E%0A%3Cmeta%20name=%22viewport%22%20content=%22width=device-width,%20initial-scale=1%22%3E%0A%0A%3Cstyle%3E%0A%20%20*,%20*::before,%20*::after%20%7B%0A%20%20%20%20box-sizing:%20border-box;%0A%20%20%7D%0A%20%20body%20%7B%0A%20%20%20%20font-family:%20sans-serif;%0A%20%20%7D%0A%3C/style%3E%0A%0A%3C/head%3E%0A%0A%3Cbody%3E%0A%0A%3Cscript%3E%0A%3C/script%3E%0A%0A%3C/body%3E%0A%0A%3C/html%3E`);
-    //this.editor.value = decodeURI(`%7B%0A%20%20%22format_version%22:%202,%0A%0A%20%20%22header%22:%20%7B%0A%20%20%20%20%22name%22:%20%22Pack%20Manifest%20Template%20-%20Bedrock%20Edition%22,%0A%20%20%20%20%22description%22:%20%22Your%20resource%20pack%20description%22,%0A%20%20%20%20%22uuid%22:%20%22${window.parent.Tools.uuidGenerator.generate()}%22,%0A%20%20%20%20%22version%22:%20%5B%201,%200,%200%20%5D,%0A%20%20%20%20%22min_engine_version%22:%20%5B%201,%2013,%200%20%5D%0A%20%20%7D,%0A%20%20%22modules%22:%20%5B%0A%20%20%20%20%7B%0A%20%20%20%20%20%20%22description%22:%20%22Your%20resource%20pack%20description%22,%0A%20%20%20%20%20%20%22type%22:%20%22resources%22,%0A%20%20%20%20%20%20%22uuid%22:%20%22${window.parent.Tools.uuidGenerator.generate()}%22,%0A%20%20%20%20%20%20%22version%22:%20%5B%201,%200,%200%20%5D%0A%20%20%20%20%7D%0A%20%20%5D,%0A%20%20%22metadata%22:%20%7B%0A%20%20%20%20%22authors%22:%20%5B%0A%20%20%20%20%20%20%22Add%20author%20names%20here%20(optional,%20'metadata'%20can%20be%20removed%20altogether)%22%0A%20%20%20%20%5D%0A%20%20%7D%0A%7D`);
+    this.editor.value = this.getAttribute("value") || "";
     this.editor.setSelectionRange(0,0);
     this.refreshLineNumbers();
   }
   refreshLineNumbers(){
     this.refreshSyntaxOverlay();
-    var previousCount = this.editor.getAttribute("data-line-count") || 0,
+    var previousCount = this.editor.getAttribute("line-count") || 0,
       count = (this.editor.value.match(/\n/g) || []).length + 1,
       difference = count - previousCount;
     if (difference == 0) return;
@@ -319,20 +355,16 @@ class NumText extends HTMLElement {
       this.gutter.appendChild(fragment);
     }
     if (difference < 0) for (var i = 0; i < Math.abs(difference); i++) this.gutter.lastChild.remove();
-    this.editor.setAttribute("data-line-count",count);
+    this.editor.setAttribute("line-count",count);
     this.refreshScrollPosition();
   }
   refreshSyntaxOverlay(){
+    if (!this.hasAttribute("syntax-language")) return;
     var tokened = this.editor.value;
     if (tokened[tokened.length - 1] == "\n") tokened += "\n";
-    this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages.html);
+    this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages[this.getAttribute("syntax-language")]);
   }
   refreshScrollPosition(){
-    if (this.scroll_request) window.cancelAnimationFrame(this.scroll_request);
-    this.scroll_request = window.requestAnimationFrame(() => {
-
-    this.scroll_request = undefined;
-
     var { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
     var scrollbarWidth = offsetWidth - clientWidth,
       scrollbarHeight = offsetHeight - clientHeight,
@@ -353,21 +385,20 @@ class NumText extends HTMLElement {
       this.container.style.removeProperty("--overscroll-bottom");
     } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
     if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
+    if (!this.hasAttribute("syntax-language")) return;
     if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
     if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
-
-    });
   }
   get value(){
     return this.editor.value;
   }
-  set value(text){
+  set value(content){
     var active = document.activeElement;
-    this.editor.focus();
+    if (active != this.editor) this.editor.focus({ preventScroll: true });
     this.editor.select();
-    document.execCommand("insertText",null,text);
-    active.focus();
-    return text;
+    document.execCommand("insertText",null,content);
+    if (active != this.editor) active.focus({ preventScroll: true });
+    return content;
   }
   get disabled(){
     return this.editor.disabled;
@@ -378,44 +409,17 @@ class NumText extends HTMLElement {
   }
 }
 window.customElements.define("num-text",NumText);
+code.editor.value = `<html>
+
+<script>
+  var name = "EEEEEEEEEE";
+<\/script>
+
+</html>`;
+code.syntaxHighlight.language("html");
 </script>
 
-<style>/*
-  html {
-    width: 100%;
-    height: 100%;
-  }
-  body {
-    margin: 0;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    background: #141414;
-    overflow: hidden;
-  }*/
-  num-text {
-    --padding: 8px;width: 470px;height: 680px;
-    //width: 100%;
-    //height: 100%;
-    --color: #eaeaea;
-    font-family: /*"Cousine"*/"Fira Code";
-    line-height: 1.5;
-    --background: #222222;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  num-text::part(editor) {
-    //resize: none;
-  }
-</style>
-
-</head>
-
-<body>
-
-<num-text id="text_editor" placeholder="Syntax highlighting!"></num-text>
+<textarea></textarea>
 
 </body>
 
