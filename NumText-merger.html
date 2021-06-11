@@ -14,12 +14,13 @@
     margin: 0;
     padding: 0 18px;
     font-family: system-ui, sans-serif;
+    background: lightgray;
   }
 </style>
 
 <template id="shadow_styles">
 
-<style num-text-theme="default">
+<style num-text-theme="default-layout">
 :host(num-text), *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -41,33 +42,15 @@
   --selection-background-inactive: #a1a1a138;
   --background: #ffffff;
   background: var(--background);
-  border: 1px solid #808080;
-  border-radius: 3px;
   overflow: hidden;
   cursor: text;
   --scrollbar-backdrop: var(--background);
   user-select: none;
   -webkit-user-select: none;
   -webkit-text-size-adjust: 100%;
-  transition: 75ms;
-  transition-property: background-color, border-color, box-shadow;
-}
-:host(num-text:where(:hover)) {
-  border-color: #3b3b3b;
-}
-:host(num-text:where(:focus-within)) {
-  --background: #f1fbff;
-  border-color: #0050ff;
-  box-shadow: 0 0 0 3px #8bd0e6ad;
 }
 :host(num-text:where(:-moz-window-inactive)) {
   --selection-background: var(--selection-background-inactive);
-}
-:host(num-text:where([disabled])) {
-  --background: #efefef;
-  border-color: #b0b0b0;
-  opacity: 0.65;
-  cursor: default;
 }
 [part="container"] {
   width: 100%;
@@ -108,8 +91,6 @@
 }
 [part="content"] {
   position: relative;
-  min-width: 4ch;
-  min-height: 4ch;
   flex-basis: 100%;
   display: flex;
   overflow: hidden;
@@ -161,6 +142,7 @@
   border-radius: 0;
   outline: none;
   z-index: 1;
+  resize: none;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -178,6 +160,36 @@
 }
 :host(num-text[syntax-highlight]) [part="editor"] {
   color: transparent;
+}
+</style>
+
+<style num-text-theme="default-appearance">
+:host(num-text) {
+  border: 1px solid #808080;
+  border-radius: 3px;
+  transition: 75ms;
+  transition-property: background-color, border-color, box-shadow;
+}
+:host(num-text:where(:hover)) {
+  border-color: #3b3b3b;
+}
+:host(num-text:where(:focus-within)) {
+  --background: #f1fbff;
+  border-color: #0050ff;
+  box-shadow: 0 0 0 3px #8bd0e6ad;
+}
+:host(num-text:where([disabled])) {
+  --background: #efefef;
+  border-color: #b0b0b0;
+  opacity: 0.65;
+  cursor: default;
+}
+[part="content"] {
+  min-width: 4ch;
+  min-height: 4ch;
+}
+[part="editor"] {
+  resize: both;
 }
 </style>
 
@@ -253,8 +265,12 @@ window.NumTextInterface = {
   }
 };
 NumTextInterface.themes.define({
-  name: "default",
-  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default']").textContent
+  name: "default-layout",
+  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-layout']").textContent
+});
+NumTextInterface.themes.define({
+  name: "default-appearance",
+  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-appearance']").textContent
 });
 NumTextInterface.themes.define({
   name: "default-highlighting",
@@ -268,20 +284,24 @@ class NumText extends HTMLElement {
     this.themes = {
       entries: {},
       add: name => {
+        if (!(name in NumTextInterface.themes.entries)) return;
         var { type, stylesheet } = NumTextInterface.themes.entries[name];
         this.themes.entries[name] = { type, enabled: true, stylesheet: stylesheet.cloneNode(true) };
         if (!this.hasAttribute("syntax-highlight") && type == "syntax-highlight") this.themes.disable(name);
         this.container.appendChild(this.themes.entries[name].stylesheet);
       },
       remove: name => {
+        if (!(name in this.themes.entries)) return;
         this.container.removeChild(this.themes.entries[name].stylesheet);
         delete this.themes.entries[name];
       },
       enable: name => {
+        if (!(name in this.themes.entries)) return;
         this.themes.entries[name].enabled = true;
         this.themes.entries[name].stylesheet.removeAttribute("media");
       },
       disable: name => {
+        if (!(name in this.themes.entries)) return;
         this.themes.entries[name].enabled = false;
         this.themes.entries[name].stylesheet.media = "not all";
       }
@@ -290,6 +310,7 @@ class NumText extends HTMLElement {
       enable: () => {
         this.setAttribute("syntax-highlight",true);
         this.container.querySelectorAll("style[num-text-theme-type='syntax-highlight']").forEach(theme => this.themes.enable(theme.getAttribute("num-text-theme")));
+        this.refreshSyntaxOverlay();
       },
       disable: () => {
         this.removeAttribute("syntax-highlight");
@@ -312,14 +333,9 @@ class NumText extends HTMLElement {
     this.gutter.addEventListener("mousedown",event => {
       event.preventDefault();
       var index = Array.from(this.gutter.children).indexOf(event.target);
-      var line = indexi("\n",this.editor.value)[index - 1];
+      var line = this.getLineIndexes()[index - 1];
       this.editor.setSelectionRange(line,line);
       this.editor.blur();
-      function indexi(char,str){
-        var list = [], i = -1;
-        while ((i = str.indexOf(char,i + 1)) >= 0) list.push(i + 1);
-        return list;
-      }
     });
     this.gutter.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
     this.content = document.createElement("div");
@@ -344,7 +360,8 @@ class NumText extends HTMLElement {
       this.refreshScrollPosition();
     }).observe(this.editor);
     this.shadowRoot.appendChild(this.container);
-    this.themes.add("default");
+    this.themes.add("default-layout");
+    //this.themes.add("default-appearance");
     this.themes.add("default-highlighting");
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
@@ -372,7 +389,7 @@ class NumText extends HTMLElement {
     this.refreshScrollPosition();
   }
   refreshSyntaxOverlay(){
-    if (!this.hasAttribute("syntax-language")) return;
+    if (!this.hasAttribute("syntax-highlight") || !this.hasAttribute("syntax-language")) return;
     var tokened = this.editor.value;
     if (tokened[tokened.length - 1] == "\n") tokened += "\n";
     this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages[this.getAttribute("syntax-language")]);
@@ -402,6 +419,14 @@ class NumText extends HTMLElement {
     if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
     if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
   }
+  getCharacterIndexes(character){
+    var list = [], i = -1;
+    while ((i = this.editor.value.indexOf(character,i + 1)) >= 0) list.push(i + 1);
+    return list;
+  }
+  getLineIndexes(){
+    return this.getCharacterIndexes("\n");
+  }
   get value(){
     return this.editor.value;
   }
@@ -430,9 +455,15 @@ code.editor.value = `<html>
 
 </html>`;
 code.syntaxHighlight.language("html");
+//code.syntaxHighlight.enable();
+
+function toggleHighlighting(){
+  (!code.hasAttribute("syntax-highlight")) ? code.syntaxHighlight.enable() : code.syntaxHighlight.disable();
+}
 </script>
 
 <textarea></textarea>
+<button onclick="toggleHighlighting();">Toggle Highlighting</button>
 
 </body>
 
