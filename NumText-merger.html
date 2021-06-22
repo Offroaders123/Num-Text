@@ -5,33 +5,40 @@
 
 <title>NumText-merger</title>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
 
 <style>
+  :root.dark {
+    color-scheme: dark;
+    color: #ffffff;
+    background: #121212;
+  }
   body {
     margin: 0;
     padding: 0 18px;
+    position: fixed;
     font-family: system-ui, sans-serif;
-    background: lightgray;
+    touch-action: manipulation;
   }
 </style>
 
 <template id="shadow_styles">
 
 <style num-text-theme="default-layout">
-:host(num-text), *, *::before, *::after {
+:host, *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-:host(num-text) {
+:host {
   --padding: 6px;
   position: relative;
-  height: 70px;width: 400px;height: 500px;
+  height: 80px;/*width: 300px;height: 500px;width: 500px;height: 225px;*/
   display: inline-block;
   vertical-align: bottom;
+  color-scheme: light;
   --color: #000000;
   color: var(--color);
   font-size: 13px;
@@ -40,16 +47,19 @@
   --selection-color: inherit;
   --selection-background: #75b1ff38;
   --selection-background-inactive: #a1a1a138;
-  --background: #ffffff;
-  background: var(--background);
+  background: #ffffff;
   overflow: hidden;
   cursor: text;
-  --scrollbar-backdrop: var(--background);
   user-select: none;
   -webkit-user-select: none;
   -webkit-text-size-adjust: 100%;
 }
-:host(num-text:where(:-moz-window-inactive)) {
+:host(.color-scheme-dark) {
+  color-scheme: dark;
+  --color: #eaeaea;
+  background: #242424;
+}
+:host(:-moz-window-inactive) {
   --selection-background: var(--selection-background-inactive);
 }
 [part="container"] {
@@ -95,45 +105,35 @@
   display: flex;
   overflow: hidden;
 }
-[part="content"]::before, [part="content"]::after {
-  content: "";
-  position: absolute;
-  background: var(--scrollbar-backdrop);
-}
-[part="content"]::before {
-  right: 0;
-  top: 0;
-  width: var(--overflow-offset-x,0px);
-  height: 100%;
-  z-index: 1;
-}
-[part="content"]::after {
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: var(--overflow-offset-y,0px);
-}
 [part="syntax"] {
-  padding-left: calc(var(--padding) + var(--overscroll-left,0px));
-  padding-right: calc(var(--padding) + var(--overflow-offset-x,0px) + var(--overscroll-right,0px));
-  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
-  padding-bottom: calc(var(--padding) + var(--overflow-offset-y,0px) + var(--overscroll-bottom,0px));
+  padding: var(--padding);
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   font-family: inherit;
+  background-clip: padding-box;
+  border: 0 solid transparent;
+  border-right-width: var(--overflow-offset-x,0px);
+  border-bottom-width: var(--overflow-offset-y,0px);
   overflow: hidden;
+  transform: translate(calc(var(--overscroll-left,0px) + calc(var(--overscroll-right,0px) * -1)),calc(var(--overscroll-top,0px) + calc(var(--overscroll-bottom,0px) * -1)));
 }
-:host(num-text:not([syntax-highlight])) [part="syntax"] {
+@supports (-moz-appearance: none) {
+  [part="syntax"] {
+    padding-left: 0;
+    border-left-width: var(--padding);
+    border-right-width: calc(var(--padding) + var(--overflow-offset-x,0px));
+  }
+}
+:host(:not([syntax-highlight])) [part="syntax"] {
   display: none;
 }
 [part="editor"] {
   padding: var(--padding);
   flex-basis: 100%;
   color: var(--color);
-  caret-color: var(--color);
   font-size: inherit;
   font-family: inherit;
   line-height: inherit;
@@ -145,6 +145,11 @@
   resize: none;
   appearance: none;
   -webkit-appearance: none;
+}
+@supports not (-webkit-touch-callout: none) {
+  [part="editor"] {
+    caret-color: var(--color);
+  }
 }
 [part="editor"]::placeholder {
   color: var(--color);
@@ -158,77 +163,113 @@
 [part="editor"]::selection:window-inactive {
   background: var(--selection-background-inactive);
 }
-:host(num-text[syntax-highlight]) [part="editor"] {
+:host([syntax-highlight]) [part="editor"] {
   color: transparent;
 }
 </style>
 
 <style num-text-theme="default-appearance">
-:host(num-text) {
+:host {
   border: 1px solid #808080;
   border-radius: 3px;
-  transition: 75ms;
-  transition-property: background-color, border-color, box-shadow;
 }
-:host(num-text:where(:hover)) {
+:host(:where(:hover)) {
   border-color: #3b3b3b;
 }
-:host(num-text:where(:focus-within)) {
-  --background: #f1fbff;
-  border-color: #0050ff;
-  box-shadow: 0 0 0 3px #8bd0e6ad;
+:host(.color-scheme-dark:where(:hover)) {
+  border-color: #acacac;
 }
-:host(num-text:where([disabled])) {
-  --background: #efefef;
+:host(:where(:focus-within)) {
+  border-color: #195ae6;
+  box-shadow: 0 0 0 3px #4fd7ff6b;
+}
+:host(.color-scheme-dark:where(:focus-within)) {
+  border-color: #66b2d9;
+}
+:host(:where([disabled])) {
   border-color: #b0b0b0;
   opacity: 0.65;
   cursor: default;
+}
+:host(:not(.color-scheme-dark):where([disabled])) {
+  background: #efefef;
 }
 [part="content"] {
   min-width: 4ch;
   min-height: 4ch;
 }
 [part="editor"] {
+  min-width: 4ch;
+  min-height: 4ch;
   resize: both;
 }
 </style>
 
 <style num-text-theme="default-highlighting">
-/* Prism Styles */
-:host(num-text) {
-  --color: #eaeaea;
-  --background: #242424;
-}
-.token:is(.doctype,.comment) {/* HTML Doctype, Global comment */
+/* HTML Doctype, Global Comment */
+.token:is(.doctype,.comment) {
   opacity: 0.55;
 }
-.token:is(.tag,.regex) {/* HTML Tag, RegEx */
-  color: #f75f62;
+/* HTML Tag, RegEx */
+.token:is(.tag,.regex) {
+  color: hsl(359,90%,48%);
 }
-.token:is(.punctuation) {/* Global punctuation */
+:host(.color-scheme-dark) .token:is(.tag,.regex) {
+  color: hsl(359,90%,68%);
+}
+/* Global Punctuation */
+.token:is(.punctuation) {
   color: var(--color);
   opacity: 0.7;
 }
-.token:is(.attr-name,.selector,.number,.boolean) {/* HTML attr-name, CSS selector, Global number, Global boolean */
-  color: #e7aa55;
+/* HTML Attribute Name, CSS Selector, Global Number, Global Boolean */
+.token:is(.attr-name,.selector,.number,.boolean) {
+  color: hsl(35,80%,36%);
 }
-.token:is(.property) {/* CSS property */
-  color: #9ec7c7;
+:host(.color-scheme-dark) .token:is(.attr-name,.selector,.number,.boolean) {
+  color: hsl(35,80%,68%);
 }
-.token:is(.attr-value,.string) {/* HTML attr-value, Global string */
-  color: #84d180;
+/* CSS Property */
+.token:is(.property) {
+  color: hsl(180,37%,37%);
 }
-.token:is(.important) {/* CSS important */
-  color: #efea6c;
+:host(.color-scheme-dark) .token:is(.property) {
+  color: hsl(180,37%,68%);
 }
-.token:is(.function) {/* CSS function, JS function */
-  color: #84bef0;
+/* HTML Attribute Value, Global String */
+.token:is(.attr-value,.string) {
+  color: hsl(117,47%,36%);
 }
-.token:is(.operator) {/* Global operator */
-  color: #6ad2ca;
+:host(.color-scheme-dark) .token:is(.attr-value,.string) {
+  color: hsl(117,47%,68%);
 }
-.token:is(.atrule,.keyword) {/* CSS @rule, JS Keyword */
-  color: #ca9df0;
+/* CSS Important */
+.token:is(.important) {
+  color: hsl(58,80%,27%);
+}
+:host(.color-scheme-dark) .token:is(.important) {
+  color: hsl(58,80%,68%);
+}
+/* CSS Function, JavaScript Function */
+.token:is(.function) {
+  color: hsl(208,78%,45%);
+}
+:host(.color-scheme-dark) .token:is(.function) {
+  color: hsl(208,78%,68%);
+}
+/* Global Operator */
+.token:is(.operator) {
+  color: hsl(175,54%,33%);
+}
+:host(.color-scheme-dark) .token:is(.operator) {
+  color: hsl(175,54%,68%);
+}
+/* CSS At Rule, JavaScript Keyword */
+.token:is(.atrule,.keyword) {
+  color: hsl(273,75%,50%);
+}
+:host(.color-scheme-dark) .token:is(.atrule,.keyword) {
+  color: hsl(273,75%,78%);
 }
 </style>
 
@@ -240,13 +281,16 @@
 
 <h1>NumText-merger</h1>
 
-<num-text id="code" placeholder="Temp..." value='{
+<num-text id="code" placeholder="Temp..." syntax-language="json" value='{
   "name": true,
   "pancakes": "sweet-towels"
 }'></num-text>
 
+<textarea>A default textarea</textarea>
+<button id="toggler" onclick="toggleHighlighting();">Toggle Highlighting</button>
+
 <script>console.clear();
-window.NumTextInterface = {
+window.NumText = {
   themes: {
     entries: {},
     define: ({ name, type = "any", content = "" } = {}) => {
@@ -254,38 +298,52 @@ window.NumTextInterface = {
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
       stylesheet.textContent = content;
-      NumTextInterface.themes.entries[name] = { type, stylesheet };
+      NumText.themes.entries[name] = { type, stylesheet };
     },
     remove: name => {
       document.querySelectorAll("num-text").forEach(element => {
         if (name in element.themes.entries) element.themes.remove(name);
       });
-      delete NumTextInterface.themes.entries[name];
+      delete NumText.themes.entries[name];
     }
   }
 };
-NumTextInterface.themes.define({
+NumText.themes.define({
   name: "default-layout",
   content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-layout']").textContent
 });
-NumTextInterface.themes.define({
+NumText.themes.define({
   name: "default-appearance",
   content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-appearance']").textContent
 });
-NumTextInterface.themes.define({
+NumText.themes.define({
   name: "default-highlighting",
   type: "syntax-highlight",
   content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-highlighting']").textContent
 });
-class NumText extends HTMLElement {
+class NumTextElement extends HTMLElement {
   constructor(){
     super();
     this.attachShadow({ mode: "open" });
+    this.colorScheme = {
+      set: appearance => {
+        var state = this.colorScheme.get();
+        if (appearance == state) return state;
+        if (appearance == "light") this.classList.remove("color-scheme-dark");
+        if (appearance == "dark") this.classList.add("color-scheme-dark");
+        return this.colorScheme.get();
+      },
+      toggle: () => {
+        this.classList.toggle("color-scheme-dark");
+        return this.colorScheme.get();
+      },
+      get: () => (!this.classList.contains("color-scheme-dark")) ? "light" : "dark"
+    },
     this.themes = {
       entries: {},
       add: name => {
-        if (!(name in NumTextInterface.themes.entries)) return;
-        var { type, stylesheet } = NumTextInterface.themes.entries[name];
+        if (!(name in NumText.themes.entries)) return;
+        var { type, stylesheet } = NumText.themes.entries[name];
         this.themes.entries[name] = { type, enabled: true, stylesheet: stylesheet.cloneNode(true) };
         if (!this.hasAttribute("syntax-highlight") && type == "syntax-highlight") this.themes.disable(name);
         this.container.appendChild(this.themes.entries[name].stylesheet);
@@ -304,17 +362,19 @@ class NumText extends HTMLElement {
         if (!(name in this.themes.entries)) return;
         this.themes.entries[name].enabled = false;
         this.themes.entries[name].stylesheet.media = "not all";
-      }
+      },
+      getAll: type => Array.from(this.container.querySelectorAll(`style${(type) ? `[num-text-theme-type="${type}"]` : ""}`)).map(stylesheet => stylesheet.getAttribute("num-text-theme"))
     };
     this.syntaxHighlight = {
       enable: () => {
         this.setAttribute("syntax-highlight",true);
-        this.container.querySelectorAll("style[num-text-theme-type='syntax-highlight']").forEach(theme => this.themes.enable(theme.getAttribute("num-text-theme")));
+        this.themes.getAll("syntax-highlight").forEach(theme => this.themes.enable(theme));
         this.refreshSyntaxOverlay();
+        this.refreshScrollPosition();
       },
       disable: () => {
         this.removeAttribute("syntax-highlight");
-        this.container.querySelectorAll("style[num-text-theme-type='syntax-highlight']").forEach(theme => this.themes.disable(theme.getAttribute("num-text-theme")));
+        this.themes.getAll("syntax-highlight").forEach(theme => this.themes.disable(theme));
       },
       language: language => {
         this.setAttribute("syntax-language",language);
@@ -324,14 +384,16 @@ class NumText extends HTMLElement {
   }
   connectedCallback(){
     this.addEventListener("mousedown",event => {
-      if (document.activeElement != this.editor) this.editor.focus();
+      var target = event.composedPath()[0];
+      if (target == this.editor) return;
+      event.preventDefault();
+      this.editor.focus({ preventScroll: (!this.gutter.contains(target)) });
     });
     this.container = document.createElement("div");
     this.container.part = "container";
     this.gutter = document.createElement("ol");
     this.gutter.part = "gutter";
     this.gutter.addEventListener("mousedown",event => {
-      event.preventDefault();
       var index = Array.from(this.gutter.children).indexOf(event.target);
       var line = this.getLineIndexes()[index - 1];
       this.editor.setSelectionRange(line,line);
@@ -348,9 +410,8 @@ class NumText extends HTMLElement {
     this.editor.wrap = "off";
     this.editor.spellcheck = false;
     this.editor.autocomplete = "off";
-    this.editor.autocapitalize = "off";
+    this.editor.autocapitalize = "none";
     this.editor.setAttribute("autocorrect","off");
-    this.editor.addEventListener("mousedown",event => event.stopPropagation());
     this.editor.addEventListener("input",() => this.refreshLineNumbers());
     this.editor.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
     new ResizeObserver(() => {
@@ -361,13 +422,14 @@ class NumText extends HTMLElement {
     }).observe(this.editor);
     this.shadowRoot.appendChild(this.container);
     this.themes.add("default-layout");
-    //this.themes.add("default-appearance");
+    this.themes.add("default-appearance");
     this.themes.add("default-highlighting");
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
     this.content.appendChild(this.editor);
     this.disabled = this.matches("[disabled]");
+    this.readonly = this.matches("[readonly]");
     this.editor.value = this.getAttribute("value") || "";
     this.editor.setSelectionRange(0,0);
     this.refreshLineNumbers();
@@ -396,16 +458,9 @@ class NumText extends HTMLElement {
   }
   refreshScrollPosition(){
     var { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
-    var scrollbarWidth = offsetWidth - clientWidth,
-      scrollbarHeight = offsetHeight - clientHeight,
-      overscrollX = (scrollLeft < 0 || (clientWidth + scrollLeft) > scrollWidth) ? (scrollLeft < 0) ? scrollLeft : (clientWidth + scrollLeft) - scrollWidth : false,
-      overscrollY = (scrollTop < 0 || (clientHeight + scrollTop) > scrollHeight) ? (scrollTop < 0) ? scrollTop : (clientHeight + scrollTop) - scrollHeight : false;
-    if (scrollbarWidth > 0){
-      this.container.style.setProperty("--overflow-offset-x",`${scrollbarWidth}px`);
-    } else this.container.style.removeProperty("--overflow-offset-x");
-    if (scrollbarHeight > 0){
-      this.container.style.setProperty("--overflow-offset-y",`${scrollbarHeight}px`);
-    } else this.container.style.removeProperty("--overflow-offset-y");
+    var scrollbarWidth = offsetWidth - clientWidth, scrollbarHeight = offsetHeight - clientHeight, overscrollX = (scrollLeft < 0 || (clientWidth + scrollLeft) > scrollWidth) ? (scrollLeft < 0) ? scrollLeft : (clientWidth + scrollLeft) - scrollWidth : false, overscrollY = (scrollTop < 0 || (clientHeight + scrollTop) > scrollHeight) ? (scrollTop < 0) ? scrollTop : (clientHeight + scrollTop) - scrollHeight : false;
+    (scrollbarWidth > 0) ? this.container.style.setProperty("--overflow-offset-x",`${scrollbarWidth}px`) : this.container.style.removeProperty("--overflow-offset-x");
+    (scrollbarHeight > 0) ? this.container.style.setProperty("--overflow-offset-y",`${scrollbarHeight}px`) : this.container.style.removeProperty("--overflow-offset-y");
     if (overscrollX == false){
       this.container.style.removeProperty("--overscroll-left");
       this.container.style.removeProperty("--overscroll-right");
@@ -414,10 +469,10 @@ class NumText extends HTMLElement {
       this.container.style.removeProperty("--overscroll-top");
       this.container.style.removeProperty("--overscroll-bottom");
     } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
-    if (this.gutter.scrollTop != this.editor.scrollTop) this.gutter.scrollTop = this.editor.scrollTop;
+    if (this.gutter.scrollTop != scrollTop) this.gutter.scrollTop = scrollTop;
     if (!this.hasAttribute("syntax-language")) return;
-    if (this.syntax.scrollLeft != this.editor.scrollLeft) this.syntax.scrollLeft = this.editor.scrollLeft;
-    if (this.syntax.scrollTop != this.editor.scrollTop) this.syntax.scrollTop = this.editor.scrollTop;
+    if (this.syntax.scrollLeft != scrollLeft) this.syntax.scrollLeft = scrollLeft;
+    if (this.syntax.scrollTop != scrollTop) this.syntax.scrollTop = scrollTop;
   }
   getCharacterIndexes(character){
     var list = [], i = -1;
@@ -445,25 +500,52 @@ class NumText extends HTMLElement {
     (state) ? this.setAttribute("disabled",true) : this.removeAttribute("disabled");
     this.editor.disabled = state;
   }
+  get readonly(){
+    return this.editor.readonly;
+  }
+  set readonly(state){
+    (state) ? this.setAttribute("readonly",true) : this.removeAttribute("readonly");
+    this.editor.readOnly = state;
+  }
 }
-window.customElements.define("num-text",NumText);
-code.editor.value = `<html>
+window.customElements.define("num-text",NumTextElement);
+/*code.editor.value = `<html>
 
 <script>
   var name = "EEEEEEEEEE";
 <\/script>
 
-</html>`;
-code.syntaxHighlight.language("html");
-//code.syntaxHighlight.enable();
+</html>`;*/
+code.editor.value = `<style>
+  hey {
+    name: var(value) !important;
+  }
+</style>
 
+<script>
+  function call(param,paramm){
+    alert(param,paramm);
+    var str = "hey";
+    if (thing == "ferferf" || not().get([0,1,2,3])){
+      call(param,paramm);
+    } else nah();
+    str.match(/name/g,"fwfwef");
+  }
+<\/script>`;
+code.syntaxHighlight.language("html");
+code.syntaxHighlight.enable();
+
+toggler.addEventListener("mousedown",event => event.preventDefault());
+
+//code.themes.getAll().forEach(theme => code.themes.remove(theme));
+//code.themes.remove("default-appearance");
+//toggleHighlighting();
 function toggleHighlighting(){
-  (!code.hasAttribute("syntax-highlight")) ? code.syntaxHighlight.enable() : code.syntaxHighlight.disable();
+  //(!code.hasAttribute("syntax-highlight")) ? code.syntaxHighlight.enable() : code.syntaxHighlight.disable();
+  //document.documentElement.classList.toggle("dark");
+  code.colorScheme.toggle();
 }
 </script>
-
-<textarea></textarea>
-<button onclick="toggleHighlighting();">Toggle Highlighting</button>
 
 </body>
 
