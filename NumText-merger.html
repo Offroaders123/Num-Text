@@ -293,24 +293,41 @@
 window.NumText = {
   themes: {
     entries: {},
-    define: ({ name, type = "any", content = "" } = {}) => {
+    define: ({ name, type = "any", url, template, content = "" } = {}) => {
+      if (NumText.themes.has(name)) throw new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`);
       var stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
-      stylesheet.textContent = content;
-      NumText.themes.entries[name] = { type, stylesheet };
+      if (!url) stylesheet.textContent = (template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content;
+      NumText.themes.entries[name] = { type, ...url && {url}, stylesheet };
+      if (url) NumText.themes.update({ name, url });
+    },
+    update: async ({ name, url, content } = {}) => {
+      if (!NumText.themes.has(name)) throw new ReferenceError(`Could not update theme "${name}", as it has not yet been defined in the global NumText object.`);
+      if (!url && content == undefined) throw new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`);
+      if (url) content = await NumText.themes.fetch((url == "refresh") ? NumText.themes.entries[name].url : url);
+      NumText.themes.entries[name].stylesheet.textContent = content;
+      document.querySelectorAll("num-text").forEach(element => {
+        if (name in element.themes.entries) element.themes.entries[name].stylesheet.textContent = content;
+      });
+    },
+    fetch: async url => {
+      var response = await fetch(url);
+      return await response.text();
     },
     remove: name => {
+      if (!NumText.themes.has(name)) throw new ReferenceError(`Could not remove theme "${name}", as it has not yet been defined in the global NumText object.`);
       document.querySelectorAll("num-text").forEach(element => {
         if (name in element.themes.entries) element.themes.remove(name);
       });
       delete NumText.themes.entries[name];
-    }
+    },
+    has: name => (name in NumText.themes.entries)
   }
 };
 NumText.themes.define({
   name: "default-layout",
-  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-layout']").textContent
+  template: shadow_styles
 });
 NumText.themes.define({
   name: "default-appearance",
@@ -319,7 +336,12 @@ NumText.themes.define({
 NumText.themes.define({
   name: "default-highlighting",
   type: "syntax-highlight",
-  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-highlighting']").textContent
+  template: shadow_styles
+});
+NumText.themes.define({
+  name: "vsc-dark-plus",
+  type: "syntax-highlight",
+  url: "https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css"
 });
 class NumTextElement extends HTMLElement {
   constructor(){
@@ -342,26 +364,37 @@ class NumTextElement extends HTMLElement {
     this.themes = {
       entries: {},
       add: name => {
-        if (!(name in NumText.themes.entries)) return;
+        if (!NumText.themes.has(name)) throw new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not yet been defined in the global NumText object.`);
+        if (this.themes.has(name)) return;
         var { type, stylesheet } = NumText.themes.entries[name];
-        this.themes.entries[name] = { type, enabled: true, stylesheet: stylesheet.cloneNode(true) };
+        this.themes.entries[name] = { type, active: true, stylesheet: stylesheet.cloneNode(true) };
         if (!this.hasAttribute("syntax-highlight") && type == "syntax-highlight") this.themes.disable(name);
         this.container.appendChild(this.themes.entries[name].stylesheet);
       },
       remove: name => {
-        if (!(name in this.themes.entries)) return;
+        if (!this.themes.has(name)) return;
         this.container.removeChild(this.themes.entries[name].stylesheet);
         delete this.themes.entries[name];
       },
+      has: name => (name in this.themes.entries),
       enable: name => {
-        if (!(name in this.themes.entries)) return;
-        this.themes.entries[name].enabled = true;
+        if (!this.themes.has(name)) throw new ReferenceError(`Could not enable theme "${name}", as it has not yet been added to ${this}.`);
+        this.themes.entries[name].active = true;
         this.themes.entries[name].stylesheet.removeAttribute("media");
       },
       disable: name => {
-        if (!(name in this.themes.entries)) return;
-        this.themes.entries[name].enabled = false;
+        if (!this.themes.has(name)) return;
+        this.themes.entries[name].active = false;
         this.themes.entries[name].stylesheet.media = "not all";
+      },
+      active: name => {
+        if (!this.themes.has(name)) return;
+        return this.themes.entries[name].active;
+      },
+      toggle: name => {
+        if (!this.themes.has(name)) throw new ReferenceError(`Could not toggle theme "${name}", as it has not yet been added to ${this}.`);
+        (!this.themes.active(name)) ? this.themes.enable(name) : this.themes.disable(name);
+        return this.themes.active(name);
       },
       getAll: type => Array.from(this.container.querySelectorAll(`style${(type) ? `[num-text-theme-type="${type}"]` : ""}`)).map(stylesheet => stylesheet.getAttribute("num-text-theme"))
     };
@@ -376,9 +409,14 @@ class NumTextElement extends HTMLElement {
         this.removeAttribute("syntax-highlight");
         this.themes.getAll("syntax-highlight").forEach(theme => this.themes.disable(theme));
       },
-      language: language => {
-        this.setAttribute("syntax-language",language);
-        this.refreshLineNumbers();
+      active: () => this.hasAttribute("syntax-highlight"),
+      toggle: () => (!this.syntaxHighlight.active()) ? this.syntaxHighlight.enable() : this.syntaxHighlight.disable(),
+      language: {
+        set: language => {
+          this.setAttribute("syntax-language",language);
+          this.refreshLineNumbers();
+        },
+        get: () => this.getAttribute("syntax-language")
       }
     };
   }
@@ -394,10 +432,13 @@ class NumTextElement extends HTMLElement {
     this.gutter = document.createElement("ol");
     this.gutter.part = "gutter";
     this.gutter.addEventListener("mousedown",event => {
-      var index = Array.from(this.gutter.children).indexOf(event.target);
-      var line = this.getLineIndexes()[index - 1];
-      this.editor.setSelectionRange(line,line);
+      var index = this.getLineIndexes()[Array.from(this.gutter.children).indexOf(event.target)];
+      this.editor.setSelectionRange(index,index);
       this.editor.blur();
+    });
+    this.gutter.addEventListener("dblclick",event => {
+      var indexes = this.getLineIndexes(), line = Array.from(this.gutter.children).indexOf(event.target);
+      this.editor.setSelectionRange(indexes[line],(line + 1 in indexes) ? indexes[line + 1] : this.editor.value.length);
     });
     this.gutter.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
     this.content = document.createElement("div");
@@ -436,9 +477,7 @@ class NumTextElement extends HTMLElement {
   }
   refreshLineNumbers(){
     this.refreshSyntaxOverlay();
-    var previousCount = this.editor.getAttribute("line-count") || 0,
-      count = (this.editor.value.match(/\n/g) || []).length + 1,
-      difference = count - previousCount;
+    var previousCount = this.getAttribute("line-count") || 0, count = (this.editor.value.match(/\n/g) || []).length + 1, difference = count - previousCount;
     if (difference == 0) return;
     if (difference > 0){
       var fragment = new DocumentFragment(), lineNumber = document.createElement("li");
@@ -447,7 +486,7 @@ class NumTextElement extends HTMLElement {
       this.gutter.appendChild(fragment);
     }
     if (difference < 0) for (var i = 0; i < Math.abs(difference); i++) this.gutter.lastChild.remove();
-    this.editor.setAttribute("line-count",count);
+    this.setAttribute("line-count",count);
     this.refreshScrollPosition();
   }
   refreshSyntaxOverlay(){
@@ -480,7 +519,9 @@ class NumTextElement extends HTMLElement {
     return list;
   }
   getLineIndexes(){
-    return this.getCharacterIndexes("\n");
+    var indexes = this.getCharacterIndexes("\n");
+    indexes.unshift(0);
+    return indexes;
   }
   get value(){
     return this.editor.value;
@@ -532,16 +573,16 @@ code.editor.value = `<style>
     str.match(/name/g,"fwfwef");
   }
 <\/script>`;
-code.syntaxHighlight.language("html");
+code.syntaxHighlight.language.set("html");
 code.syntaxHighlight.enable();
 
 toggler.addEventListener("mousedown",event => event.preventDefault());
 
 //code.themes.getAll().forEach(theme => code.themes.remove(theme));
 //code.themes.remove("default-appearance");
-//toggleHighlighting();
+toggleHighlighting();
 function toggleHighlighting(){
-  //(!code.hasAttribute("syntax-highlight")) ? code.syntaxHighlight.enable() : code.syntaxHighlight.disable();
+  //code.syntaxHighlight.toggle();
   //document.documentElement.classList.toggle("dark");
   code.colorScheme.toggle();
 }
