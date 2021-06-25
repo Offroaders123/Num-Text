@@ -41,21 +41,16 @@ window.NumText = {
 };
 NumText.themes.define({
   name: "default-layout",
-  url: "default-layout.css"
+  url: "https://offroaders123.github.io/Num-Text-Component/default-layout.css"
 });
 NumText.themes.define({
   name: "default-appearance",
-  url: "default-appearance.css"
+  url: "https://offroaders123.github.io/Num-Text-Component/default-appearance.css"
 });
 NumText.themes.define({
   name: "default-highlighting",
   type: "syntax-highlight",
-  url: "default-highlighting.css"
-});
-NumText.themes.define({
-  name: "vsc-dark-plus",
-  type: "syntax-highlight",
-  url: "https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css"
+  url: "https://offroaders123.github.io/Num-Text-Component/default-highlighting.css"
 });
 class NumTextElement extends HTMLElement {
   constructor(){
