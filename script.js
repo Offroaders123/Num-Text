@@ -41,16 +41,16 @@ window.NumText = {
 };
 NumText.themes.define({
   name: "default-layout",
-  template: shadow_styles
+  url: "default-layout.css"
 });
 NumText.themes.define({
   name: "default-appearance",
-  content: document.querySelector("#shadow_styles").content.querySelector("[num-text-theme='default-appearance']").textContent
+  url: "default-appearance.css"
 });
 NumText.themes.define({
   name: "default-highlighting",
   type: "syntax-highlight",
-  template: shadow_styles
+  url: "default-highlighting.css"
 });
 NumText.themes.define({
   name: "vsc-dark-plus",
@@ -207,6 +207,7 @@ class NumTextElement extends HTMLElement {
     if (!this.hasAttribute("syntax-highlight") || !this.hasAttribute("syntax-language")) return;
     var tokened = this.editor.value;
     if (tokened[tokened.length - 1] == "\n") tokened += "\n";
+    if (!("Prism" in window)) return console.error(`Could not refresh syntax overlay for ${this}, as Prism has not yet been loaded into the document.`);
     this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages[this.getAttribute("syntax-language")]);
   }
   refreshScrollPosition(){
