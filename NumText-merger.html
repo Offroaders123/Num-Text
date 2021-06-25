@@ -298,7 +298,7 @@ window.NumText = {
       var stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
-      if (!url) stylesheet.textContent = (template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content;
+      if (!url) stylesheet.textContent = NumText.themes._tempBackwardsCompatibility_((template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content);
       NumText.themes.entries[name] = { type, ...url && {url}, stylesheet };
       if (url) NumText.themes.update({ name, url });
     },
@@ -306,6 +306,7 @@ window.NumText = {
       if (!NumText.themes.has(name)) throw new ReferenceError(`Could not update theme "${name}", as it has not yet been defined in the global NumText object.`);
       if (!url && content == undefined) throw new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`);
       if (url) content = await NumText.themes.fetch((url == "refresh") ? NumText.themes.entries[name].url : url);
+      content = NumText.themes._tempBackwardsCompatibility_(content);
       NumText.themes.entries[name].stylesheet.textContent = content;
       document.querySelectorAll("num-text").forEach(element => {
         if (name in element.themes.entries) element.themes.entries[name].stylesheet.textContent = content;
@@ -314,6 +315,11 @@ window.NumText = {
     fetch: async url => {
       var response = await fetch(url);
       return await response.text();
+    },
+    _tempBackwardsCompatibility_: content => {
+      if (CSS.supports("not selector(:is())")) content = content.replace(/:is\(/g,":-webkit-any(");
+      if (CSS.supports("not selector(:where())")) content = content.replace(/:where\(/g,":-webkit-any(");
+      return content;
     },
     remove: name => {
       if (!NumText.themes.has(name)) throw new ReferenceError(`Could not remove theme "${name}", as it has not yet been defined in the global NumText object.`);
