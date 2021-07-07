@@ -2,7 +2,7 @@ window.NumText = {
   themes: {
     entries: {},
     define: ({ name, type = "any", url, template, content = "" } = {}) => {
-      if (NumText.themes.has(name)) throw new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`);
+      if (NumText.themes.has(name)) return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
       var stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
@@ -11,8 +11,8 @@ window.NumText = {
       if (url) NumText.themes.update({ name, url });
     },
     update: async ({ name, url, content } = {}) => {
-      if (!NumText.themes.has(name)) throw new ReferenceError(`Could not update theme "${name}", as it has not yet been defined in the global NumText object.`);
-      if (!url && content == undefined) throw new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`);
+      if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not update theme "${name}", as it has not yet been defined in the global NumText object.`));
+      if (!url && content == undefined) return console.error(new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`));
       if (url) content = await NumText.themes.fetch((url == "refresh") ? NumText.themes.entries[name].url : url);
       content = NumText.themes._tempBackwardsCompatibility_(content);
       NumText.themes.entries[name].stylesheet.textContent = content;
@@ -30,7 +30,7 @@ window.NumText = {
       return content;
     },
     remove: name => {
-      if (!NumText.themes.has(name)) throw new ReferenceError(`Could not remove theme "${name}", as it has not yet been defined in the global NumText object.`);
+      if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not yet been defined in the global NumText object.`));
       document.querySelectorAll("num-text").forEach(element => {
         if (name in element.themes.entries) element.themes.remove(name);
       });
@@ -73,7 +73,7 @@ class NumTextElement extends HTMLElement {
     this.themes = {
       entries: {},
       add: name => {
-        if (!NumText.themes.has(name)) throw new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not yet been defined in the global NumText object.`);
+        if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not yet been defined in the global NumText object.`));
         if (this.themes.has(name)) return;
         var { type, stylesheet } = NumText.themes.entries[name];
         this.themes.entries[name] = { type, active: true, stylesheet: stylesheet.cloneNode(true) };
@@ -81,18 +81,18 @@ class NumTextElement extends HTMLElement {
         this.container.appendChild(this.themes.entries[name].stylesheet);
       },
       remove: name => {
-        if (!this.themes.has(name)) return;
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not yet been added to ${this}.`));
         this.container.removeChild(this.themes.entries[name].stylesheet);
         delete this.themes.entries[name];
       },
       has: name => (name in this.themes.entries),
       enable: name => {
-        if (!this.themes.has(name)) throw new ReferenceError(`Could not enable theme "${name}", as it has not yet been added to ${this}.`);
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not enable theme "${name}", as it has not yet been added to ${this}.`));
         this.themes.entries[name].active = true;
         this.themes.entries[name].stylesheet.removeAttribute("media");
       },
       disable: name => {
-        if (!this.themes.has(name)) return;
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not disable theme "${name}", as it has not yet been added to ${this}.`));
         this.themes.entries[name].active = false;
         this.themes.entries[name].stylesheet.media = "not all";
       },
@@ -101,7 +101,7 @@ class NumTextElement extends HTMLElement {
         return this.themes.entries[name].active;
       },
       toggle: name => {
-        if (!this.themes.has(name)) throw new ReferenceError(`Could not toggle theme "${name}", as it has not yet been added to ${this}.`);
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not toggle theme "${name}", as it has not yet been added to ${this}.`));
         (!this.themes.active(name)) ? this.themes.enable(name) : this.themes.disable(name);
         return this.themes.active(name);
       },
@@ -119,14 +119,7 @@ class NumTextElement extends HTMLElement {
         this.themes.getAll("syntax-highlight").forEach(theme => this.themes.disable(theme));
       },
       active: () => this.hasAttribute("syntax-highlight"),
-      toggle: () => (!this.syntaxHighlight.active()) ? this.syntaxHighlight.enable() : this.syntaxHighlight.disable(),
-      language: {
-        set: language => {
-          this.setAttribute("syntax-language",language);
-          this.refreshLineNumbers();
-        },
-        get: () => this.getAttribute("syntax-language")
-      }
+      toggle: () => (!this.syntaxHighlight.active()) ? this.syntaxHighlight.enable() : this.syntaxHighlight.disable()
     };
   }
   connectedCallback(){
@@ -134,7 +127,7 @@ class NumTextElement extends HTMLElement {
       var target = event.composedPath()[0];
       if (target == this.editor) return;
       event.preventDefault();
-      this.editor.focus({ preventScroll: (!this.gutter.contains(target)) });
+      this.focus({ preventScroll: (!this.gutter.contains(target)) });
     });
     this.container = document.createElement("div");
     this.container.part = "container";
@@ -233,12 +226,26 @@ class NumTextElement extends HTMLElement {
     indexes.unshift(0);
     return indexes;
   }
+  replace(pattern,value){
+    var replaced = this.editor.value.replace(pattern,value);
+    if (replaced != this.editor.value) this.value = replaced;
+  }
+  focus({ preventScroll = false } = {}) {
+    this.editor.focus({ preventScroll });
+  }
+  get syntaxLanguage(){
+    return this.getAttribute("syntax-language");
+  }
+  set syntaxLanguage(language){
+    this.setAttribute("syntax-language",language);
+    this.refreshLineNumbers();
+  }
   get value(){
     return this.editor.value;
   }
   set value(content){
     var active = document.activeElement;
-    if (active != this.editor) this.editor.focus({ preventScroll: true });
+    if (active != this.editor) this.focus({ preventScroll: true });
     this.editor.select();
     document.execCommand("insertText",null,content);
     if (active != this.editor) active.focus({ preventScroll: true });

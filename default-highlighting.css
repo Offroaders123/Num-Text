@@ -1,24 +1,29 @@
-/* HTML Doctype, Global Comment */
-.token:is(.doctype,.comment) {
+/* HTML Global Comment */
+.token:is(.comment) {
   opacity: 0.55;
 }
-/* HTML Tag, RegEx */
-.token:is(.tag,.regex) {
+/* HTML Tag, DOCTYPE Tag, RegEx */
+.token:is(.tag,.doctype-tag,.regex) {
   color: hsl(359,90%,48%);
 }
-:host(.color-scheme-dark) .token:is(.tag,.regex) {
+:host(.color-scheme-dark) .token:is(.tag,.doctype-tag,.regex) {
   color: hsl(359,90%,68%);
 }
 /* Global Punctuation */
 .token:is(.punctuation) {
   color: var(--color);
+}
+.token:is(.punctuation), .language-html :is(.language-css,.language-javascript) .token:is(.punctuation) {
   opacity: 0.7;
 }
-/* HTML Attribute Name, CSS Selector, Global Number, Global Boolean */
-.token:is(.attr-name,.selector,.number,.boolean) {
+.token:is(.tag,.doctype) .token:is(.punctuation) {
+  opacity: 0.5;
+}
+/* HTML Attribute Name, CSS Selector, Global Number, Global Boolean, DOCTYPE Name */
+.token:is(.attr-name,.selector,.number,.boolean), .token.doctype .token.name {
   color: hsl(35,80%,36%);
 }
-:host(.color-scheme-dark) .token:is(.attr-name,.selector,.number,.boolean) {
+:host(.color-scheme-dark) .token:is(.attr-name,.selector,.number,.boolean), :host(.color-scheme-dark) .token.doctype .token.name {
   color: hsl(35,80%,68%);
 }
 /* CSS Property */
@@ -28,11 +33,14 @@
 :host(.color-scheme-dark) .token:is(.property) {
   color: hsl(180,37%,68%);
 }
-/* HTML Attribute Value, Global String */
-.token:is(.attr-value,.string) {
+/* HTML Attribute Value, Global String, HTML Attribute Value Punctuation */
+.token:is(.attr-value,.string), .token:is(.attr-value) .token.punctuation {
   color: hsl(117,47%,36%);
 }
-:host(.color-scheme-dark) .token:is(.attr-value,.string) {
+.token:is(.attr-value) .token.punctuation {
+  opacity: 1;
+}
+:host(.color-scheme-dark) .token:is(.attr-value,.string), :host(.color-scheme-dark) .token:is(.attr-value) .token.punctuation {
   color: hsl(117,47%,68%);
 }
 /* CSS Important */
