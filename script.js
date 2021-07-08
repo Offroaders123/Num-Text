@@ -40,17 +40,17 @@ window.NumText = {
   }
 };
 NumText.themes.define({
-  name: "default-layout",
-  url: "https://offroaders123.github.io/Num-Text-Component/default-layout.css"
+  name: "vanilla-layout",
+  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css"
 });
 NumText.themes.define({
-  name: "default-appearance",
-  url: "https://offroaders123.github.io/Num-Text-Component/default-appearance.css"
+  name: "vanilla-appearance",
+  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-appearance.css"
 });
 NumText.themes.define({
-  name: "default-highlighting",
+  name: "vanilla-highlighting",
   type: "syntax-highlight",
-  url: "https://offroaders123.github.io/Num-Text-Component/default-highlighting.css"
+  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-highlighting.css"
 });
 class NumTextElement extends HTMLElement {
   constructor(){
@@ -164,9 +164,9 @@ class NumTextElement extends HTMLElement {
       this.refreshScrollPosition();
     }).observe(this.editor);
     this.shadowRoot.appendChild(this.container);
-    this.themes.add("default-layout");
-    this.themes.add("default-appearance");
-    this.themes.add("default-highlighting");
+    this.themes.add("vanilla-layout");
+    this.themes.add("vanilla-appearance");
+    this.themes.add("vanilla-highlighting");
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
