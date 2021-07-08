@@ -9,6 +9,7 @@
 <link rel="preload" as="style" href="https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css">
 <link rel="preload" as="style" href="https://offroaders123.github.io/Num-Text-Component/vanilla-appearance.css">
 <link rel="preload" as="style" href="https://offroaders123.github.io/Num-Text-Component/vanilla-highlighting.css">
+<link rel="preload" as="style" href="https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css">
 <script src="script.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
@@ -69,15 +70,22 @@ code.editor.value = `<style>
 code.syntaxLanguage = "html";
 code.syntaxHighlight.enable();
 
+NumText.themes.define({
+  name: "vsc-dark-plus",
+  type: "syntax-highlight",
+  url: "https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css"
+});
+
 toggler.addEventListener("mousedown",event => event.preventDefault());
 
 //code.themes.getAll().forEach(theme => code.themes.remove(theme));
-//code.themes.remove("default-appearance");
-toggleHighlighting();
+code.colorScheme.toggle();
+code.themes.add("vsc-dark-plus");
+//toggleHighlighting();
 function toggleHighlighting(){
-  //code.syntaxHighlight.toggle();
+  code.syntaxHighlight.toggle();
   //document.documentElement.classList.toggle("dark");
-  code.colorScheme.toggle();
+  //code.colorScheme.toggle();
 }
 </script>
 

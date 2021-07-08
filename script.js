@@ -3,36 +3,17 @@ window.NumText = {
     entries: {},
     define: ({ name, type = "any", url, template, content = "" } = {}) => {
       if (NumText.themes.has(name)) return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
-      var stylesheet = document.createElement("style");
+      var stylesheet = document.createElement((url) ? "link" : "style");
+      if (url) stylesheet.rel = "stylesheet";
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
-      if (!url) stylesheet.textContent = NumText.themes._tempBackwardsCompatibility_((template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content);
-      NumText.themes.entries[name] = { type, ...url && {url}, stylesheet };
-      if (url) NumText.themes.update({ name, url });
-    },
-    update: async ({ name, url, content } = {}) => {
-      if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not update theme "${name}", as it has not yet been defined in the global NumText object.`));
-      if (!url && content == undefined) return console.error(new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`));
-      if (url) content = await NumText.themes.fetch((url == "refresh") ? NumText.themes.entries[name].url : url);
-      content = NumText.themes._tempBackwardsCompatibility_(content);
-      NumText.themes.entries[name].stylesheet.textContent = content;
-      document.querySelectorAll("num-text").forEach(element => {
-        if (name in element.themes.entries) element.themes.entries[name].stylesheet.textContent = content;
-      });
-    },
-    fetch: async url => {
-      var response = await fetch(url);
-      return await response.text();
-    },
-    _tempBackwardsCompatibility_: content => {
-      if (CSS.supports("not selector(:is())")) content = content.replace(/:is\(/g,":-webkit-any(");
-      if (CSS.supports("not selector(:where())")) content = content.replace(/:where\(/g,":-webkit-any(");
-      return content;
+      (url) ? stylesheet.href = url : stylesheet.textContent = (template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content;
+      NumText.themes.entries[name] = { type, ...url && {url}, stylesheet, elements: [] };
     },
     remove: name => {
-      if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not yet been defined in the global NumText object.`));
-      document.querySelectorAll("num-text").forEach(element => {
-        if (name in element.themes.entries) element.themes.remove(name);
+      if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not been defined in the global NumText object.`));
+      NumText.themes.entries[name].elements.forEach(element => {
+        if (element.themes.has(name)) element.themes.remove(name);
       });
       delete NumText.themes.entries[name];
     },
@@ -73,26 +54,29 @@ class NumTextElement extends HTMLElement {
     this.themes = {
       entries: {},
       add: name => {
-        if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not yet been defined in the global NumText object.`));
+        if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not been defined in the global NumText object.`));
         if (this.themes.has(name)) return;
         var { type, stylesheet } = NumText.themes.entries[name];
-        this.themes.entries[name] = { type, active: true, stylesheet: stylesheet.cloneNode(true) };
-        if (!this.hasAttribute("syntax-highlight") && type == "syntax-highlight") this.themes.disable(name);
-        this.container.appendChild(this.themes.entries[name].stylesheet);
+        this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true), active: true };
+        if (type == "syntax-highlight") this.themes.getAll("syntax-highlight").forEach(theme => this.themes.remove(theme));
+        if (type == "syntax-highlight" && !this.hasAttribute("syntax-highlight")) this.themes.disable(name);
+        this.shadowRoot.insertBefore(this.themes.entries[name].stylesheet,this.container);
+        NumText.themes.entries[name].elements.push(this);
       },
       remove: name => {
-        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not yet been added to ${this}.`));
-        this.container.removeChild(this.themes.entries[name].stylesheet);
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not been added to ${this}.`));
+        this.shadowRoot.removeChild(this.themes.entries[name].stylesheet);
         delete this.themes.entries[name];
+        NumText.themes.entries[name].elements.splice(NumText.themes.entries[name].elements.indexOf(this));
       },
       has: name => (name in this.themes.entries),
       enable: name => {
-        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not enable theme "${name}", as it has not yet been added to ${this}.`));
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not enable theme "${name}", as it has not been added to ${this}.`));
         this.themes.entries[name].active = true;
         this.themes.entries[name].stylesheet.removeAttribute("media");
       },
       disable: name => {
-        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not disable theme "${name}", as it has not yet been added to ${this}.`));
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not disable theme "${name}", as it has not been added to ${this}.`));
         this.themes.entries[name].active = false;
         this.themes.entries[name].stylesheet.media = "not all";
       },
@@ -101,11 +85,11 @@ class NumTextElement extends HTMLElement {
         return this.themes.entries[name].active;
       },
       toggle: name => {
-        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not toggle theme "${name}", as it has not yet been added to ${this}.`));
+        if (!this.themes.has(name)) return console.error(new ReferenceError(`Could not toggle theme "${name}", as it has not been added to ${this}.`));
         (!this.themes.active(name)) ? this.themes.enable(name) : this.themes.disable(name);
         return this.themes.active(name);
       },
-      getAll: type => Array.from(this.container.querySelectorAll(`style${(type) ? `[num-text-theme-type="${type}"]` : ""}`)).map(stylesheet => stylesheet.getAttribute("num-text-theme"))
+      getAll: type => Array.from(this.shadowRoot.querySelectorAll(`[num-text-theme]${(type) ? `[num-text-theme-type="${type}"]` : ""}`)).map(stylesheet => stylesheet.getAttribute("num-text-theme"))
     };
     this.syntaxHighlight = {
       enable: () => {
@@ -195,7 +179,7 @@ class NumTextElement extends HTMLElement {
     if (!this.hasAttribute("syntax-highlight") || !this.hasAttribute("syntax-language")) return;
     var tokened = this.editor.value;
     if (tokened[tokened.length - 1] == "\n") tokened += "\n";
-    if (!("Prism" in window)) return console.error(`Could not refresh syntax overlay for ${this}, as Prism has not yet been loaded into the document.`);
+    if (!("Prism" in window)) return console.error(`Could not refresh syntax overlay for ${this}, as Prism has not been loaded into the document.`);
     this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages[this.getAttribute("syntax-language")]);
   }
   refreshScrollPosition(){

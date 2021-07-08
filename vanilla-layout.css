@@ -21,8 +21,8 @@
   background: #ffffff;
   overflow: hidden;
   cursor: text;
-  user-select: none;
   -webkit-user-select: none;
+  user-select: none;
   -webkit-text-size-adjust: 100%;
 }
 :host(.color-scheme-dark) {
@@ -114,8 +114,8 @@
   outline: none;
   z-index: 1;
   resize: none;
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
 }
 @supports not (-webkit-touch-callout: none) {
   [part="editor"] {
