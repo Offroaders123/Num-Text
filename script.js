@@ -3,18 +3,33 @@ window.NumText = {
     entries: {},
     define: ({ name, type = "any", url, template, content = "" } = {}) => {
       if (NumText.themes.has(name)) return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
-      var stylesheet = document.createElement((url) ? "link" : "style");
-      if (url) stylesheet.rel = "stylesheet";
+      var stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
-      (url) ? stylesheet.href = url : stylesheet.textContent = (template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content;
+      if (!url) stylesheet.textContent = NumText.themes._tempBackwardsCompatibility_((template) ? template.content.querySelector(`[num-text-theme="${name}"]`).textContent : content);
       NumText.themes.entries[name] = { type, ...url && {url}, stylesheet, elements: [] };
+      if (url) NumText.themes.update({ name, url });
+    },
+    update: async ({ name, url, content } = {}) => {
+      if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not update theme "${name}", as it has not been defined in the global NumText object.`));
+      if (!url && content == undefined) return console.error(new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`));
+      if (url) content = await NumText.themes.fetch((url == "refresh") ? NumText.themes.entries[name].url : url);
+      content = NumText.themes._tempBackwardsCompatibility_(content);
+      NumText.themes.entries[name].stylesheet.textContent = content;
+      NumText.themes.entries[name].elements.forEach(element => element.themes.entries[name].stylesheet.textContent = content);
+    },
+    fetch: async url => {
+      var response = await fetch(url);
+      return await response.text();
+    },
+    _tempBackwardsCompatibility_: content => {
+      if (CSS.supports("not selector(:is())")) content = content.replace(/:is\(/g,":-webkit-any(");
+      if (CSS.supports("not selector(:where())")) content = content.replace(/:where\(/g,":-webkit-any(");
+      return content;
     },
     remove: name => {
       if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not been defined in the global NumText object.`));
-      NumText.themes.entries[name].elements.forEach(element => {
-        if (element.themes.has(name)) element.themes.remove(name);
-      });
+      NumText.themes.entries[name].elements.forEach(element => element.themes.remove(name));
       delete NumText.themes.entries[name];
     },
     has: name => (name in NumText.themes.entries)

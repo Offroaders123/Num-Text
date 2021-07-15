@@ -53,7 +53,7 @@
   padding: 0 calc(var(--padding) * var(--padding-multiplier));
   display: block;
   text-align: right;
-  opacity: 0.55;
+  opacity: 0.45;
 }
 [part="line-number"]:first-child::before {
   padding-top: calc(var(--padding) + var(--overscroll-top,0px));

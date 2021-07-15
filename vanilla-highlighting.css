@@ -34,13 +34,13 @@
   color: hsl(180,37%,68%);
 }
 /* HTML Attribute Value, Global String, HTML Attribute Value Punctuation */
-.token:is(.attr-value,.string), .token:is(.attr-value) .token.punctuation {
+.token:is(.attr-value,.string), .token:is(.attr-value) .token.punctuation:not(.attr-equals) {
   color: hsl(117,47%,36%);
 }
-.token:is(.attr-value) .token.punctuation {
+.token:is(.attr-value) .token.punctuation:not(.attr-equals) {
   opacity: 1;
 }
-:host(.color-scheme-dark) .token:is(.attr-value,.string), :host(.color-scheme-dark) .token:is(.attr-value) .token.punctuation {
+:host(.color-scheme-dark) .token:is(.attr-value,.string), :host(.color-scheme-dark) .token:is(.attr-value) .token.punctuation:not(.attr-equals) {
   color: hsl(117,47%,68%);
 }
 /* CSS Important */
@@ -56,6 +56,13 @@
 }
 :host(.color-scheme-dark) .token:is(.function) {
   color: hsl(208,78%,68%);
+}
+/* Global Class Name */
+.token:is(.class-name) {
+  color: hsl(45,80%,27%);
+}
+:host(.color-scheme-dark) .token:is(.class-name) {
+  color: hsl(45,80%,68%);
 }
 /* Global Operator */
 .token:is(.operator) {
