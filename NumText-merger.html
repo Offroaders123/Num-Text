@@ -14,6 +14,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
 
+<script>
+  NumText.themes.define({
+    name: "vsc-dark-plus",
+    type: "syntax-highlight",
+    url: "https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css"
+  });
+</script>
+
 <style>
   :root.dark {
     color-scheme: dark;
@@ -35,7 +43,7 @@
 
 <h1>NumText-merger</h1>
 
-<num-text id="code" placeholder="Temp..." syntax-language="json" value='{
+<num-text id="code" placeholder="Temp..." syntax-language="json" themes="vsc-dark-plus" value='{
   "name": true,
   "pancakes": "sweet-towels"
 }'></num-text>
@@ -43,7 +51,7 @@
 <textarea>A default textarea</textarea>
 <button id="toggler" onclick="toggleHighlighting();">Toggle Highlighting</button>
 
-<script>console.clear();
+<script>//console.clear();
 /*code.editor.value = `<html>
 
 <script>
@@ -69,12 +77,6 @@ code.editor.value = `<style>
 <\/script>`;
 code.syntaxLanguage = "html";
 code.syntaxHighlight.enable();
-
-NumText.themes.define({
-  name: "vsc-dark-plus",
-  type: "syntax-highlight",
-  url: "https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css"
-});
 
 toggler.addEventListener("mousedown",event => event.preventDefault());
 

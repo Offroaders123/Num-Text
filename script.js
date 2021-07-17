@@ -37,6 +37,7 @@ window.NumText = {
 };
 NumText.themes.define({
   name: "vanilla-layout",
+  type: "user-agent",
   url: "https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css"
 });
 NumText.themes.define({
@@ -72,8 +73,8 @@ class NumTextElement extends HTMLElement {
         if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not been defined in the global NumText object.`));
         if (this.themes.has(name)) return;
         var { type, stylesheet } = NumText.themes.entries[name];
-        this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true), active: true };
         if (type == "syntax-highlight") this.themes.getAll("syntax-highlight").forEach(theme => this.themes.remove(theme));
+        this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true), active: true };
         if (type == "syntax-highlight" && !this.hasAttribute("syntax-highlight")) this.themes.disable(name);
         this.shadowRoot.insertBefore(this.themes.entries[name].stylesheet,this.container);
         NumText.themes.entries[name].elements.push(this);
@@ -104,7 +105,7 @@ class NumTextElement extends HTMLElement {
         (!this.themes.active(name)) ? this.themes.enable(name) : this.themes.disable(name);
         return this.themes.active(name);
       },
-      getAll: type => Array.from(this.shadowRoot.querySelectorAll(`[num-text-theme]${(type) ? `[num-text-theme-type="${type}"]` : ""}`)).map(stylesheet => stylesheet.getAttribute("num-text-theme"))
+      getAll: type => Object.keys(this.themes.entries).filter(theme => (!type) ? (this.themes.entries[theme].type != "user-agent") : type == this.themes.entries[theme].type)
     };
     this.syntaxHighlight = {
       enable: () => {
@@ -135,7 +136,7 @@ class NumTextElement extends HTMLElement {
     this.gutter.addEventListener("mousedown",event => {
       var index = this.getLineIndexes()[Array.from(this.gutter.children).indexOf(event.target)];
       this.editor.setSelectionRange(index,index);
-      this.editor.blur();
+      this.blur();
     });
     this.gutter.addEventListener("dblclick",event => {
       var indexes = this.getLineIndexes(), line = Array.from(this.gutter.children).indexOf(event.target);
@@ -166,6 +167,7 @@ class NumTextElement extends HTMLElement {
     this.themes.add("vanilla-layout");
     this.themes.add("vanilla-appearance");
     this.themes.add("vanilla-highlighting");
+    if (this.hasAttribute("themes")) this.getAttribute("themes").split(" ").forEach(theme => this.themes.add(theme));
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
@@ -229,8 +231,11 @@ class NumTextElement extends HTMLElement {
     var replaced = this.editor.value.replace(pattern,value);
     if (replaced != this.editor.value) this.value = replaced;
   }
-  focus({ preventScroll = false } = {}) {
+  focus({ preventScroll = false } = {}){
     this.editor.focus({ preventScroll });
+  }
+  blur(){
+    this.editor.blur();
   }
   get syntaxLanguage(){
     return this.getAttribute("syntax-language");
