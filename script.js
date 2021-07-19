@@ -33,7 +33,13 @@ window.NumText = {
       delete NumText.themes.entries[name];
     },
     has: name => (name in NumText.themes.entries)
-  }
+  },
+	languages: {
+		JAVASCRIPT: "javascript",
+		HTML: "html",
+		CSS: "css",
+		JSON: "json",
+	}
 };
 NumText.themes.define({
   name: "vanilla-layout",
@@ -121,6 +127,26 @@ class NumTextElement extends HTMLElement {
       active: () => this.hasAttribute("syntax-highlight"),
       toggle: () => (!this.syntaxHighlight.active()) ? this.syntaxHighlight.enable() : this.syntaxHighlight.disable()
     };
+    this.formatting = {
+			enable: () => {
+				this.setAttribute("format", true);
+			},
+			disable: () => {
+				this.removeAttribute("format");
+			},
+			active: () => this.hasAttribute("format"),
+			toggle: () => {
+				!this.formatting.active()
+					? this.formatting.enable()
+					: this.formatting.disable();
+			},
+			language: {
+				set: (language) => {
+					this.setAttribute("format-language", language);
+				},
+				get: () => this.getAttribute("format-language"),
+			},
+		};
   }
   connectedCallback(){
     this.addEventListener("mousedown",event => {
@@ -147,6 +173,7 @@ class NumTextElement extends HTMLElement {
     this.content.part = "content";
     this.syntax = document.createElement("pre");
     this.syntax.part = "syntax";
+    this.syntax.style.tabSize = "4";
     this.editor = document.createElement("textarea");
     this.editor.part = "editor";
     this.editor.placeholder = this.getAttribute("placeholder") || "";
@@ -155,7 +182,320 @@ class NumTextElement extends HTMLElement {
     this.editor.autocomplete = "off";
     this.editor.autocapitalize = "none";
     this.editor.setAttribute("autocorrect","off");
-    this.editor.addEventListener("input",() => this.refreshLineNumbers());
+    this.editor.style.tabSize = "4";
+			var beforeInput = (e) => {
+				String.prototype.reverse = function () {
+					return this.split("").reverse().join("");
+				};
+				var ta = this.editor;
+				if (!ta._lastValue) ta._lastValue = [];
+				if (!ta._lastPosition) ta._lastPosition = [];
+				if (!ta._history) ta._history = 0;
+				var lang = this.formatting.language.get(),
+					enabled = this.formatting.active();
+				e.preventDefault();
+				var type = e.inputType.toString().toLowerCase(),
+					value = e.data,
+					pos = 0,
+					before = ta.value.substr(0, ta.selectionStart),
+					after = ta.value.substr(ta.selectionEnd),
+					prevChar = before.substr(before.length - 1),
+					nextChar = after.substr(0, 1),
+					scope = this;
+				function getIndents() {
+					var indexes = scope.getLineIndexes();
+					var linePos = indexes[indexes.length - 1],
+						line = before.substring(
+							linePos,
+							ta.value.indexOf("\n", linePos) - 1
+						);
+					line = line
+						.toString()
+						.split("\n")
+						[line.toString().split("\n").length - 1].toString();
+					return (line.match(/[\t]/gis) || []).length;
+				}
+				if (
+					before.lastIndexOf("<script>\n") >
+						before.lastIndexOf("</script>") &&
+					-1 < after.indexOf("</script>") &&
+					after.indexOf("</script>") > after.indexOf("<script>\n")
+				) {
+					lang = NumText.languages.JAVASCRIPT;
+				} else if (
+					before.lastIndexOf("<style>\n") >
+						before.lastIndexOf("</style>") &&
+					-1 < after.indexOf("</style>") &&
+					after.indexOf("</style>") > after.indexOf("<style>\n")
+				) {
+					lang = NumText.languages.CSS;
+				}
+				if (type.match(/insert/gis) && !type.match(/line/gis)) {
+					ta._lastPosition = ta._lastPosition.splice(
+						ta._history,
+						ta._lastPosition.length - ta._history
+					);
+					ta._lastValue = ta._lastValue.splice(
+						ta._history,
+						ta._lastValue.length - ta._history
+					);
+					ta._history = 0;
+					ta._lastValue.unshift(ta.value);
+					ta._lastPosition.unshift({
+						start: ta.selectionStart,
+						end: ta.selectionEnd,
+					});
+					if (!(!lang || !enabled)) {
+						if (value == ")" && nextChar == ")") {
+							value = "";
+							pos = 1;
+						} else if (value == "}" && nextChar == "}") {
+							value = "";
+							pos = 1;
+						} else if (value == "]" && nextChar == "]") {
+							value = "";
+							pos = 1;
+						} else if (value == "'" && nextChar == "'") {
+							value = "";
+							pos = 1;
+						} else if (value == '"' && nextChar == '"') {
+							value = "";
+							pos = 1;
+						} else if (value == "`" && nextChar == "`") {
+							value = "";
+							pos = 1;
+						}
+						if (value == "(") {
+							value = "()";
+							pos = -1;
+						} else if (value == "{") {
+							value = "{}";
+							pos = -1;
+						} else if (value == "[") {
+							value = "[]";
+							pos = -1;
+						} else if (value == "'") {
+							value = "''";
+							pos = -1;
+						} else if (value == '"') {
+							value = '""';
+							pos = -1;
+						} else if (value == "`") {
+							value = "``";
+							pos = -1;
+						}
+						if (lang == NumText.languages.HTML) {
+							if (value == ">") {
+								function checkTag(tag) {
+									var holder = document.createElement("div");
+									if (tag.match(/doctype/gis)) {
+										return {
+											selfClosing:
+												!holder.innerHTML.match(
+													/\<\//gis
+												)
+													? true
+													: false,
+											doctype: tag.match(/doctype/gis)
+												? true
+												: false,
+										};
+									}
+									var elm = document.createElement(tag);
+									holder.appendChild(elm);
+									return {
+										selfClosing: !holder.innerHTML.match(
+											/\<\//gis
+										)
+											? true
+											: false,
+										doctype: tag.match(/doctype/gis)
+											? true
+											: false,
+									};
+								}
+								var wholeTag =
+									before.split("<")[
+										before.split("<").length - 1
+									];
+								if (
+									!wholeTag.match(/\>/gis) &&
+									wholeTag != ""
+								) {
+									var tag = wholeTag.split(/ +/gis)[0];
+									var tagCheck = checkTag(tag);
+									if (
+										tagCheck.selfClosing &&
+										!tagCheck.doctype
+									) {
+										value = " />";
+									} else if (!tagCheck.doctype) {
+										value = "></" + tag + ">";
+										pos = -(3 + tag.length);
+									} else {
+										value = ">";
+									}
+								}
+							}
+						} else if (lang == NumText.languages.JAVASCRIPT) {
+							if (
+								value == "n" &&
+								before.substr(before.length - 4) == "--fn"
+							) {
+								ta.selectionStart -= 4;
+								value = "function() {}";
+								pos = -1;
+							} else if (
+								value == "c" &&
+								before.substr(before.length - 4) == "--fn"
+							) {
+								ta.selectionStart -= 4;
+								value = "function () {}";
+								pos = -5;
+							} else if (
+								value == "a" &&
+								before.substr(before.length - 4) == "--fn"
+							) {
+								ta.selectionStart -= 4;
+								value = `(() => {\n${"\t".repeat(
+									getIndents() + 1
+								)}\n${"\t".repeat(getIndents())}})();`;
+								pos = -(5 + getIndents() + 1);
+							} else if (
+								value == "r" &&
+								before.substr(before.length - 4) == "--fn"
+							) {
+								ta.selectionStart -= 4;
+								value = `() => {\n${"\t".repeat(
+									getIndents() + 1
+								)}\n${"\t".repeat(getIndents())}}`;
+								pos = -(1 + getIndents() + 1);
+							}
+						}
+					}
+				} else if (type.match(/line/gis)) {
+					ta._lastValue.unshift(ta.value);
+					ta._lastPosition.unshift({
+						start: ta.selectionStart,
+						end: ta.selectionEnd,
+					});
+					value = "\n";
+					if (!(!lang || !enabled)) {
+						if (lang == NumText.languages.HTML) {
+							value = "\n" + "\t".repeat(getIndents());
+							if (prevChar == ">" && nextChar == "<") {
+								value =
+									"\n" +
+									"\t".repeat(getIndents() + 1) +
+									"\n" +
+									"\t".repeat(getIndents());
+								pos = -1 - getIndents();
+							}
+						} else if (
+							lang == NumText.languages.JAVASCRIPT ||
+							lang == NumText.languages.CSS ||
+							lang == NumText.languages.JSON
+						) {
+							value = "\n" + "\t".repeat(getIndents());
+							if (prevChar == "{" && nextChar == "}") {
+								value =
+									"\n" +
+									"\t".repeat(getIndents() + 1) +
+									"\n" +
+									"\t".repeat(getIndents());
+								pos = -1 - getIndents();
+							}
+							if (prevChar == "[" && nextChar == "]") {
+								value =
+									"\n" +
+									"\t".repeat(getIndents() + 1) +
+									"\n" +
+									"\t".repeat(getIndents());
+								pos = -1 - getIndents();
+							}
+						}
+					}
+				} else if (type.match(/delete/gis)) {
+					ta._lastValue.unshift(ta.value);
+					ta._lastPosition.unshift({
+						start: ta.selectionStart,
+						end: ta.selectionEnd,
+					});
+					var selection = ta.value.substring(
+						ta.selectionStart,
+						ta.selectionEnd
+					);
+					if (selection.length == 0) ta.selectionStart -= 1;
+					selection = ta.value.substring(
+						ta.selectionStart,
+						ta.selectionEnd
+					);
+					value = "";
+					if (!(!lang || !enabled)) {
+						if (selection == "[" && nextChar == "]") {
+							ta.selectionEnd += 1;
+						}
+						if (selection == "(" && nextChar == ")") {
+							ta.selectionEnd += 1;
+						}
+						if (selection == "{" && nextChar == "}") {
+							ta.selectionEnd += 1;
+						}
+						if (selection == "'" && nextChar == "'") {
+							ta.selectionEnd += 1;
+						}
+						if (selection == "`" && nextChar == "`") {
+							ta.selectionEnd += 1;
+						}
+						if (selection == '"' && nextChar == '"') {
+							ta.selectionEnd += 1;
+						}
+					}
+					document.execCommand("delete", null, false);
+				} else if (type.match(/undo/gis)) {
+					ta._lastValue.unshift(ta.value);
+					value = "";
+					ta._history++;
+					document.execCommand("undo", null, false);
+					if (mobileAndTabletCheck()) {
+						ta.value = ta._lastValue[ta._history];
+					}
+					ta.selectionStart =
+						(ta._lastPosition[ta._history] || { start: 0 }).start +
+						1;
+					ta.selectionEnd =
+						(ta._lastPosition[ta._history] || { end: 0 }).end + 1;
+				} else if (type.match(/redo/gis)) {
+					value = "";
+					document.execCommand("redo", null, false);
+					ta._history--;
+					if (ta._history < 0) ta._history = 0;
+					if (mobileAndTabletCheck()) {
+						ta.value = ta._lastValue[ta._history];
+					}
+					ta.selectionStart =
+						(ta._lastPosition[ta._history] || { start: 0 }).start +
+						1;
+					ta.selectionEnd =
+						(ta._lastPosition[ta._history] || { end: 0 }).end + 1;
+				} else {
+					value = "";
+				}
+				if (value.length > 0)
+					document.execCommand("insertText", false, value);
+				ta.selectionStart += pos;
+				if (pos != 0) ta.selectionEnd = ta.selectionStart;
+				this.refreshLineNumbers();
+			};
+			this.editor.addEventListener("keydown", (e) => {
+				if (e.key.toUpperCase() == "TAB") {
+					e.preventDefault();
+					e.data = "\t";
+					e.inputType = "insertText";
+					beforeInput(e);
+				}
+			});
+			this.editor.addEventListener("beforeinput", beforeInput);
     this.editor.addEventListener("scroll",() => this.refreshScrollPosition(),{ passive: true });
     new ResizeObserver(() => {
       this.style.removeProperty("width");
