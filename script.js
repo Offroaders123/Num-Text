@@ -1,7 +1,7 @@
 window.NumText = {
   themes: {
     entries: {},
-    define: ({ name, type = "any", url, template, content = "" } = {}) => {
+    define: (name,{ type = "any", url, template, content = "" } = {}) => {
       if (NumText.themes.has(name)) return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
       var stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
@@ -35,17 +35,14 @@ window.NumText = {
     has: name => (name in NumText.themes.entries)
   }
 };
-NumText.themes.define({
-  name: "vanilla-layout",
+NumText.themes.define("vanilla-layout",{
   type: "user-agent",
   url: "https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css"
 });
-NumText.themes.define({
-  name: "vanilla-appearance",
+NumText.themes.define("vanilla-appearance",{
   url: "https://offroaders123.github.io/Num-Text-Component/vanilla-appearance.css"
 });
-NumText.themes.define({
-  name: "vanilla-highlighting",
+NumText.themes.define("vanilla-highlighting",{
   type: "syntax-highlight",
   url: "https://offroaders123.github.io/Num-Text-Component/vanilla-highlighting.css"
 });
@@ -53,6 +50,7 @@ class NumTextElement extends HTMLElement {
   constructor(){
     super();
     this.attachShadow({ mode: "open" });
+    this.defined = false;
     this.colorScheme = {
       set: appearance => {
         var state = this.colorScheme.get();
@@ -123,6 +121,8 @@ class NumTextElement extends HTMLElement {
     };
   }
   connectedCallback(){
+    if (this.defined || !this.isConnected) return;
+    this.defined = true;
     this.addEventListener("mousedown",event => {
       var target = event.composedPath()[0];
       if (target == this.editor) return;
