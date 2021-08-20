@@ -63,7 +63,7 @@ class NumTextElement extends HTMLElement {
         this.classList.toggle("color-scheme-dark");
         return this.colorScheme.get();
       },
-      get: () => (!this.classList.contains("color-scheme-dark")) ? "light" : "dark"
+      get: () => (!this.matches(".color-scheme-dark")) ? "light" : "dark"
     },
     this.themes = {
       entries: {},
@@ -73,7 +73,7 @@ class NumTextElement extends HTMLElement {
         var { type, stylesheet } = NumText.themes.entries[name];
         if (type == "syntax-highlight") this.themes.getAll("syntax-highlight").forEach(theme => this.themes.remove(theme));
         this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true), active: true };
-        if (type == "syntax-highlight" && !this.hasAttribute("syntax-highlight")) this.themes.disable(name);
+        if (type == "syntax-highlight" && !this.matches("[syntax-highlight]")) this.themes.disable(name);
         this.shadowRoot.insertBefore(this.themes.entries[name].stylesheet,this.container);
         NumText.themes.entries[name].elements.push(this);
       },
@@ -107,7 +107,7 @@ class NumTextElement extends HTMLElement {
     };
     this.syntaxHighlight = {
       enable: () => {
-        this.setAttribute("syntax-highlight",true);
+        this.setAttribute("syntax-highlight","");
         this.themes.getAll("syntax-highlight").forEach(theme => this.themes.enable(theme));
         this.refreshSyntaxOverlay();
         this.refreshScrollPosition();
@@ -116,14 +116,14 @@ class NumTextElement extends HTMLElement {
         this.removeAttribute("syntax-highlight");
         this.themes.getAll("syntax-highlight").forEach(theme => this.themes.disable(theme));
       },
-      active: () => this.hasAttribute("syntax-highlight"),
+      active: () => this.matches("[syntax-highlight]"),
       toggle: () => (!this.syntaxHighlight.active()) ? this.syntaxHighlight.enable() : this.syntaxHighlight.disable()
     };
   }
   connectedCallback(){
     if (this.defined || !this.isConnected) return;
     this.defined = true;
-    this.addEventListener("mousedown",event => {
+    this.addEventListener("pointerdown",event => {
       var target = event.composedPath()[0];
       if (target == this.editor) return;
       event.preventDefault();
@@ -133,7 +133,7 @@ class NumTextElement extends HTMLElement {
     this.container.part = "container";
     this.gutter = document.createElement("ol");
     this.gutter.part = "gutter";
-    this.gutter.addEventListener("mousedown",event => {
+    this.gutter.addEventListener("pointerdown",event => {
       var index = this.getLineIndexes()[Array.from(this.gutter.children).indexOf(event.target)];
       this.editor.setSelectionRange(index,index);
       this.blur();
@@ -167,7 +167,7 @@ class NumTextElement extends HTMLElement {
     this.themes.add("vanilla-layout");
     this.themes.add("vanilla-appearance");
     this.themes.add("vanilla-highlighting");
-    if (this.hasAttribute("themes")) this.getAttribute("themes").split(" ").forEach(theme => this.themes.add(theme));
+    if (this.matches("[themes]")) this.getAttribute("themes").split(" ").forEach(theme => this.themes.add(theme));
     this.container.appendChild(this.gutter);
     this.container.appendChild(this.content);
     this.content.appendChild(this.syntax);
@@ -193,7 +193,7 @@ class NumTextElement extends HTMLElement {
     this.refreshScrollPosition();
   }
   refreshSyntaxOverlay(){
-    if (!this.hasAttribute("syntax-highlight") || !this.hasAttribute("syntax-language")) return;
+    if (!this.matches("[syntax-highlight][syntax-language]")) return;
     var tokened = this.editor.value;
     if (tokened[tokened.length - 1] == "\n") tokened += "\n";
     if (!("Prism" in window)) return console.error(`Could not refresh syntax overlay for ${this}, as Prism has not been loaded into the document.`);
@@ -213,7 +213,7 @@ class NumTextElement extends HTMLElement {
       this.container.style.removeProperty("--overscroll-bottom");
     } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
     if (this.gutter.scrollTop != scrollTop) this.gutter.scrollTop = scrollTop;
-    if (!this.hasAttribute("syntax-language")) return;
+    if (!this.matches("[syntax-language]")) return;
     if (this.syntax.scrollLeft != scrollLeft) this.syntax.scrollLeft = scrollLeft;
     if (this.syntax.scrollTop != scrollTop) this.syntax.scrollTop = scrollTop;
   }
@@ -259,14 +259,14 @@ class NumTextElement extends HTMLElement {
     return this.editor.disabled;
   }
   set disabled(state){
-    (state) ? this.setAttribute("disabled",true) : this.removeAttribute("disabled");
+    (state) ? this.setAttribute("disabled","") : this.removeAttribute("disabled");
     this.editor.disabled = state;
   }
   get readonly(){
     return this.editor.readonly;
   }
   set readonly(state){
-    (state) ? this.setAttribute("readonly",true) : this.removeAttribute("readonly");
+    (state) ? this.setAttribute("readonly","") : this.removeAttribute("readonly");
     this.editor.readOnly = state;
   }
 }
