@@ -123,7 +123,7 @@ class NumTextElement extends HTMLElement {
   connectedCallback(){
     if (this.defined || !this.isConnected) return;
     this.defined = true;
-    this.addEventListener("pointerdown",event => {
+    this.addEventListener("mousedown",event => {
       var target = event.composedPath()[0];
       if (target == this.editor) return;
       event.preventDefault();
@@ -133,7 +133,7 @@ class NumTextElement extends HTMLElement {
     this.container.part = "container";
     this.gutter = document.createElement("ol");
     this.gutter.part = "gutter";
-    this.gutter.addEventListener("pointerdown",event => {
+    this.gutter.addEventListener("mousedown",event => {
       var index = this.getLineIndexes()[Array.from(this.gutter.children).indexOf(event.target)];
       this.editor.setSelectionRange(index,index);
       this.blur();
