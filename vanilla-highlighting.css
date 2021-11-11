@@ -71,10 +71,10 @@
 :host(.color-scheme-dark) .token:is(.operator) {
   color: hsl(175,54%,68%);
 }
-/* CSS At Rule, JavaScript Keyword */
-.token:is(.atrule,.keyword) {
+/* CSS Rule, JavaScript Keyword */
+.token:is(.rule,.keyword) {
   color: hsl(273,75%,50%);
 }
-:host(.color-scheme-dark) .token:is(.atrule,.keyword) {
+:host(.color-scheme-dark) .token:is(.rule,.keyword) {
   color: hsl(273,75%,78%);
 }
