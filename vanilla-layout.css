@@ -103,6 +103,7 @@
 }
 [part="editor"] {
   padding: var(--padding);
+  min-width: 0;
   flex-basis: 100%;
   color: var(--color);
   font: inherit;
