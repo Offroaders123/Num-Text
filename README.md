@@ -1,67 +1,75 @@
-<table>
-  <tr>
-    <td>
-      <h1>Num-Text Component</h1>
-    </td>
-  </tr>
-</table>
+# Num Text Component
 
-A simple Web Component that adds line numbers to native textarea elements!
+A simple Web Component that adds line numbers and syntax highlighting to the default textarea element!
 
-There are many libraries out there that can textareas with line numbers already, but they have many more features that what I needed for my own projects. So, I went ahead and tried to make my own!
+There are already plenty of code editors out there made for the browser, like [CodeMirror](https://codemirror.net) or [Monaco Editor](https://microsoft.github.io/monaco-editor), but they had more features than what I needed for my own projects, the main one being [Smart Text Editor](https://stedit.app). I decided to go ahead and make my own!
 
-## How to Use
-Thanks to the amazing [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components), it is extremely easy to create your own elements that can abstract away in-depth functionality that may otherwise be hard to work with.
+## Getting Started
+Thanks to the powerful [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components), it's possible to create your own HTML elements that abstract away in-depth functionality that may otherwise be hard to work with manually. No need to import any stylesheets, or make any JavaScript calls. Just import the component's source into your page, and let the browser handle the rest!
 
-### Creating a Num-Text Element
+### Creating a Num Text Element
 To use a `<num-text>` element in your own page, follow the steps written below:
 
-1. Add the component's script tag to the `<head>` of your page. This will register the custom component with the document, as well as provide all of the behavior that defines how `<num-text>` elements will work.
+1. Add the component's script tag to the `<head>` of your page. This will register the component as a custom element that you will be able to use in your HTML and JavaScript.
+
     ```html
     <script src="https://offroaders123.github.io/Num-Text-Component/script.js"></script>
     ```
 
-2. Add a `<num-text>` element to the page using any of the ways you would for a default element.
+2. Add a `<num-text>` element to the page using any of the ways you would for a default HTML element. Now you are ready to start editing!
+
     ```html
     <!-- Add it directly to your HTML -->
 
-    <body>
-      <num-text></num-text>
-    </body>
+    <num-text></num-text>
     ```
     ```javascript
-    /*  Append it to the document using JavaScript  */
+    /*  Or create it with JavaScript  */
 
-    var numberedTextarea = document.createElement("num-text");
-    document.body.appendChild(numberedTextarea);
+    const editor = document.createElement("num-text");
     ```
 
-3. Ready for action!
-
-### Styling a Num-Text Element
-Changing the default styles of a `<num-text>` element is really simple! Follow the steps written below to see how you can style each and every pixel just the way you want it:
+### Styling a Num Text Element
+Changing the default styles of a `<num-text>` element is fairly simple! Check out how to customize each part of the component's appearance:
 
 ```html
-<!-- Element structure -->
+<!-- Component structure -->
 
 <num-text>
-  #shadow-root (open)
+  <!-- #shadow-root (open) -->
 
-    <link rel="stylesheet" href="https://offroaders123.github.io/Num-Text-Component/styles.css">
-    <container>
+    <style num-text-theme="vanilla-layout" num-text-theme-type="user-agent">
+      /* Minimum default component styles */
+    </style>
 
-      <gutter>
-        <line-number>
-          ::before (Visible line number and spacing)
-        </line-number>
-      </gutter>
+    <style num-text-theme="vanilla-appearance" num-text-theme-type="any">
+      /* Additional appearance styles */
+    </style>
 
-      <editor></editor>
+    <style num-text-theme="vanilla-highlighting" num-text-theme-type="syntax-highlight">
+      /* Num Text's vanilla Prism theme styles */
+    </style>
 
-    </container>
+    <div part="container">
+
+      <ol part="gutter">
+        <li part="line-number">
+          <!--
+            ::before (Visible line number and it's surrounding padding)
+          -->
+        </li>
+      </ol>
+
+      <div part="content">
+        <pre part="syntax">
+          <!-- Prism syntax highlighting populates here -->
+        </pre>
+        <textarea part="editor"></textarea>
+      </div>
+
+    </div>
 
 </num-text>
-
 ```
 
 *More coming soon!*
