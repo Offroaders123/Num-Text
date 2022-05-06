@@ -3,54 +3,27 @@
 
 <head>
 
-<title>Num Text Example</title>
+<title>Num Text</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="color-scheme" content="dark">
 <base href="../">
 <link rel="stylesheet" href="styles.css">
 <script src="script.js"></script>
-
-<style>
-  :root {
-    color-scheme: dark;
-  }
-  /* body {
-    margin: 0;
-    font-family: sans-serif;
-  } */
-</style>
 
 </head>
 
 <body>
 
-<h1>Num Text Example</h1>
+<h1>Num Text</h1>
 
-<num-text id="code" value='{
-  "name": true,
-  "pancakes": "sweet-towels"
-}'></num-text>
+<num-text id="code"></num-text>
 
 <textarea>A default textarea</textarea>
 
 <script>
-code.editor.value = `<style>
-  hey {
-    name: var(value) !important;
-  }
-</style>
-
-<script>
-  function call(param,paramm){
-    alert(param,paramm);
-    var str = "hey";
-    if (thing == "ferferf" || not().get([0,1,2,3])){
-      call(param,paramm);
-    } else nah();
-    str.match(/name/g,"fwfwef");
-  }
-<\/script>`;
-code.refreshLineNumbers();
+  code.editor.value = "hey\n\nabcdefghijklmnopqrstuvwxyz:)\n\n\n\n\n\n\n\nhey";
+  code.refreshLineNumbers();
 </script>
 
 </body>
