@@ -93,40 +93,5 @@ class NumTextElement extends HTMLElement {
     } else (overscrollY < 0) ? this.container.style.setProperty("--overscroll-top",`${Math.abs(overscrollY)}px`) : this.container.style.setProperty("--overscroll-bottom",`${overscrollY}px`);
     if (this.gutter.scrollTop != scrollTop) this.gutter.scrollTop = scrollTop;
   }
-  replace(pattern,value){
-    var replaced = this.editor.value.replace(pattern,value);
-    if (replaced != this.editor.value) this.value = replaced;
-  }
-  focus({ preventScroll = false } = {}){
-    this.editor.focus({ preventScroll });
-  }
-  blur(){
-    this.editor.blur();
-  }
-  get value(){
-    return this.editor.value;
-  }
-  set value(content){
-    var active = document.activeElement;
-    if (active != this.editor) this.focus({ preventScroll: true });
-    this.editor.select();
-    document.execCommand("insertText",null,content);
-    if (active != this.editor) active.focus({ preventScroll: true });
-    return content;
-  }
-  get disabled(){
-    return this.editor.disabled;
-  }
-  set disabled(state){
-    (state) ? this.setAttribute("disabled","") : this.removeAttribute("disabled");
-    this.editor.disabled = state;
-  }
-  get readonly(){
-    return this.editor.readonly;
-  }
-  set readonly(state){
-    (state) ? this.setAttribute("readonly","") : this.removeAttribute("readonly");
-    this.editor.readOnly = state;
-  }
 }
 window.customElements.define("num-text",NumTextElement);
