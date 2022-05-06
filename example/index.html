@@ -6,12 +6,11 @@
 <title>Num Text Example</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
-<base href=".">
-<link rel="preload" as="fetch" crossorigin href="https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css">
-<link rel="preload" as="fetch" crossorigin href="https://offroaders123.github.io/Num-Text-Component/vanilla-appearance.css">
-<link rel="preload" as="fetch" crossorigin href="https://offroaders123.github.io/Num-Text-Component/vanilla-highlighting.css">
+<base href="../">
+<link rel="preload" as="fetch" crossorigin href="styles.css">
+<link rel="preload" as="fetch" crossorigin href="vanilla-highlighting.css">
 <link rel="preload" as="fetch" crossorigin href="https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css">
-<script src="https://offroaders123.github.io/Num-Text-Component/script.js"></script>
+<script src="script.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
 
@@ -23,10 +22,8 @@
 </script>
 
 <style>
-  :root.dark {
+  :root {
     color-scheme: dark;
-    color: #ffffff;
-    background: #121212;
   }
   body {
     margin: 0;
@@ -43,7 +40,7 @@
 
 <h1>Num Text Example</h1>
 
-<num-text id="code" placeholder="Temp..." syntax-language="json" value='{
+<num-text id="code" class="color-scheme-dark" placeholder="Temp..." syntax-language="json" value='{
   "name": true,
   "pancakes": "sweet-towels"
 }'></num-text>

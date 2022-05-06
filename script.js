@@ -37,14 +37,11 @@ window.NumText = {
 };
 NumText.themes.define("vanilla-layout",{
   type: "user-agent",
-  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css"
-});
-NumText.themes.define("vanilla-appearance",{
-  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-appearance.css"
+  url: "styles.css"
 });
 NumText.themes.define("vanilla-highlighting",{
   type: "syntax-highlight",
-  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-highlighting.css"
+  url: "vanilla-highlighting.css"
 });
 class NumTextElement extends HTMLElement {
   constructor(){
@@ -165,7 +162,6 @@ class NumTextElement extends HTMLElement {
     }).observe(this.editor);
     this.shadowRoot.appendChild(this.container);
     this.themes.add("vanilla-layout");
-    this.themes.add("vanilla-appearance");
     this.themes.add("vanilla-highlighting");
     if (this.matches("[themes]")) this.getAttribute("themes").split(" ").forEach(theme => this.themes.add(theme));
     this.container.appendChild(this.gutter);
