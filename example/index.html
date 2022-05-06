@@ -5,33 +5,19 @@
 
 <title>Num Text Example</title>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <base href="../">
-<link rel="preload" as="fetch" crossorigin href="styles.css">
-<link rel="preload" as="fetch" crossorigin href="vanilla-highlighting.css">
-<link rel="preload" as="fetch" crossorigin href="https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css">
+<link rel="stylesheet" href="styles.css">
 <script src="script.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js" data-manual></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/components/prism-json.min.js"></script>
-
-<script>
-  NumText.themes.define("vsc-dark-plus",{
-    type: "syntax-highlight",
-    url: "https://cdn.jsdelivr.net/npm/prism-themes@1.7.0/themes/prism-vsc-dark-plus.css"
-  });
-</script>
 
 <style>
   :root {
     color-scheme: dark;
   }
-  body {
+  /* body {
     margin: 0;
-    padding: 0 18px;
-    position: fixed;
-    font-family: system-ui, sans-serif;
-    touch-action: manipulation;
-  }
+    font-family: sans-serif;
+  } */
 </style>
 
 </head>
@@ -40,22 +26,14 @@
 
 <h1>Num Text Example</h1>
 
-<num-text id="code" class="color-scheme-dark" placeholder="Temp..." syntax-language="json" value='{
+<num-text id="code" value='{
   "name": true,
   "pancakes": "sweet-towels"
 }'></num-text>
 
 <textarea>A default textarea</textarea>
-<button id="toggler" onclick="toggleHighlighting();">Toggle Highlighting</button>
-
-<script>//console.clear();
-/*code.editor.value = `<html>
 
 <script>
-  var name = "EEEEEEEEEE";
-<\/script>
-
-</html>`;*/
 code.editor.value = `<style>
   hey {
     name: var(value) !important;
@@ -72,20 +50,7 @@ code.editor.value = `<style>
     str.match(/name/g,"fwfwef");
   }
 <\/script>`;
-code.syntaxLanguage = "html";
-code.syntaxHighlight.enable();
-
-toggler.addEventListener("mousedown",event => event.preventDefault());
-
-//code.themes.getAll().forEach(theme => code.themes.remove(theme));
-//code.colorScheme.toggle();
-//code.themes.add("vsc-dark-plus");
-//toggleHighlighting();
-function toggleHighlighting(){
-  code.syntaxHighlight.toggle();
-  //document.documentElement.classList.toggle("dark");
-  //code.colorScheme.toggle();
-}
+code.refreshLineNumbers();
 </script>
 
 </body>

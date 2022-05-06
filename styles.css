@@ -1,12 +1,12 @@
-:host, *, *::before, *::after {
+num-text {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-:host {
+num-text {
   --padding: 6px;
   position: relative;
-  height: 80px;/*width: 300px;height: 500px;width: 500px;height: 225px;*/
+  height: 80px;
   display: inline-block;
   vertical-align: bottom;
   color-scheme: light;
@@ -15,9 +15,6 @@
   font-size: 13px;
   font-family: ui-monospace, "Cousine", "Consolas", monospace;
   line-height: 1.4;
-  --selection-color: inherit;
-  --selection-background: #75b1ff38;
-  --selection-background-inactive: #a1a1a138;
   background: #ffffff;
   overflow: hidden;
   cursor: text;
@@ -25,53 +22,26 @@
   user-select: none;
   -webkit-text-size-adjust: 100%;
 }
-:host {
+num-text {
   border: 1px solid #808080;
   border-radius: 3px;
 }
-:host(:where(:hover)) {
-  border-color: #3b3b3b;
-}
-:host(:where(:focus-within)) {
-  border-color: #195ae6;
-  box-shadow: 0 0 0 3px #4fd7ff6b;
-}
-:host(.color-scheme-dark) {
-  color-scheme: dark;
-  --color: #eaeaea;
-  background: #242424;
-}
-:host(.color-scheme-dark:where(:hover)) {
-  border-color: #acacac;
-}
-:host(.color-scheme-dark:where(:focus-within)) {
-  border-color: #66b2d9;
-}
-:host(:where([disabled])) {
-  border-color: #b0b0b0;
-  opacity: 0.65;
-  cursor: default;
-}
-:host(:not(.color-scheme-dark):where([disabled])) {
-  background: #efefef;
-}
-:host(:-moz-window-inactive) {
-  --selection-background: var(--selection-background-inactive);
-}
-[part="container"] {
+num-text::part(container) {
   width: 100%;
   height: 100%;
   display: flex;
 }
-[part="gutter"] {
+num-text::part(gutter) {
   counter-reset: line-number;
+  margin: 0;
+  padding: 0;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   list-style: inside none;
   overflow: hidden;
 }
-[part="line-number"]::before {
+num-text::part(line-number)::before {
   content: counter(line-number);
   counter-increment: line-number;
   --padding-multiplier: 2;
@@ -80,58 +50,34 @@
   text-align: right;
   opacity: 0.45;
 }
-[part="line-number"]:first-child::before {
+num-text::part(line-number):first-child::before {
   padding-top: calc(var(--padding) + var(--overscroll-top,0px));
 }
-[part="line-number"]:last-child {
+num-text::part(line-number):last-child {
   flex-basis: 100%;
 }
-[part="line-number"]:last-child::before {
+num-text::part(line-number):last-child::before {
   padding-bottom: calc(var(--padding) + var(--overscroll-bottom,0px));
   height: 100%;
 }
-[part="line-number"]:last-child::after {
+num-text::part(line-number):last-child::after {
   content: "";
   display: block;
   height: var(--overflow-offset-y,0px);
 }
-[part="content"] {
+num-text::part(content) {
   position: relative;
   flex-basis: 100%;
   display: flex;
   overflow: hidden;
 }
-[part="content"] {
+num-text::part(content) {
   min-width: 4ch;
   min-height: 4ch;
 }
-[part="syntax"] {
+num-text::part(editor) {
   padding: var(--padding);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  font: inherit;
-  background-clip: padding-box;
-  border: 0 solid transparent;
-  border-right-width: var(--overflow-offset-x,0px);
-  border-bottom-width: var(--overflow-offset-y,0px);
-  overflow: hidden;
-  transform: translate(calc(var(--overscroll-left,0px) + calc(var(--overscroll-right,0px) * -1)),calc(var(--overscroll-top,0px) + calc(var(--overscroll-bottom,0px) * -1)));
-}
-@supports (-moz-appearance: none) {
-  [part="syntax"] {
-    padding-left: 0;
-    border-left-width: var(--padding);
-    border-right-width: calc(var(--padding) + var(--overflow-offset-x,0px));
-  }
-}
-:host(:not([syntax-highlight])) [part="syntax"] {
-  display: none;
-}
-[part="editor"] {
-  padding: var(--padding);
+  box-sizing: border-box;
   min-width: 0;
   flex-basis: 100%;
   color: var(--color);
@@ -146,28 +92,18 @@
   -webkit-appearance: none;
   appearance: none;
 }
-[part="editor"] {
+num-text::part(editor) {
   min-width: 4ch;
   min-height: 4ch;
   resize: both;
 }
 @supports not (-webkit-touch-callout: none) {
-  [part="editor"] {
+  num-text::part(editor) {
     caret-color: var(--color);
   }
 }
-[part="editor"]::placeholder {
+num-text::part(editor)::placeholder {
   color: var(--color);
   opacity: 0.55;
   white-space: pre-wrap;
-}
-[part="editor"]::selection {
-  color: var(--selection-color);
-  background: var(--selection-background);
-}
-[part="editor"]::selection:window-inactive {
-  background: var(--selection-background-inactive);
-}
-:host([syntax-highlight]) [part="editor"] {
-  color: transparent;
 }
