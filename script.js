@@ -109,6 +109,47 @@ class NumTextElement extends HTMLElement {
 
     if (this.gutter.scrollTop !== scrollTop) this.gutter.scrollTop = scrollTop;
   }
+  replace(regexp,value){
+    const result = this.editor.value.replace(regexp,value);
+    if (result !== this.editor.value){
+      this.value = result;
+    }
+  }
+  focus(options){
+    this.editor.focus(options);
+  }
+  blur(){
+    this.editor.blur();
+  }
+  get value(){
+    return this.editor.value;
+  }
+  set value(value){
+    const { activeElement } = document;
+    if (activeElement !== this.editor){
+      this.focus({ preventScroll: true });
+    }
+    this.editor.select();
+    document.execCommand("insertText",false,value);
+    if (activeElement !== this.editor){
+      activeElement.focus({ preventScroll: true });
+    }
+    return value;
+  }
+  get disabled(){
+    return this.editor.disabled;
+  }
+  set disabled(value){
+    (value) ? this.setAttribute("disabled","") : this.removeAttribute("disabled");
+    this.editor.disabled = value;
+  }
+  get readOnly(){
+    return this.editor.readOnly;
+  }
+  set readOnly(value){
+    (value) ? this.setAttribute("readonly","") : this.removeAttribute("readonly");
+    this.editor.readOnly = value;
+  }
 }
 
 window.customElements.define("num-text",NumTextElement);
