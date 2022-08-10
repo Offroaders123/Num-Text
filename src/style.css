@@ -1,4 +1,4 @@
-num-text {
+:host {
   display: inline-flex;
   vertical-align: bottom;
   color: FieldText;
@@ -14,10 +14,13 @@ num-text {
   user-select: none;
   -webkit-text-size-adjust: 100%;
 }
-num-text {
+:host {
   --padding: 6px;
 }
-num-text ol {
+:host(:focus) {
+  outline: auto;
+}
+ol {
   counter-reset: line;
   margin: 0;
   padding: 0;
@@ -29,27 +32,27 @@ num-text ol {
   text-align: right;
   overflow: hidden;
 }
-num-text li {
+li {
   padding-inline: calc(var(--padding) * 2);
 }
-num-text li::before {
+li::before {
   content: counter(line);
   counter-increment: line;
   opacity: 0.45;
 }
-num-text li:first-child {
+li:first-child {
   padding-top: calc(var(--padding) + var(--overscroll-top,0px));
 }
-num-text li:last-child {
+li:last-child {
   padding-bottom: calc(var(--padding) + var(--overscroll-bottom,0px));
   flex-basis: 100%;
 }
-num-text li:last-child::after {
+li:last-child::after {
   content: "";
   display: block;
   height: var(--overflow-offset-y,0px);
 }
-num-text textarea {
+textarea {
   padding: var(--padding);
   min-width: 4ch;
   min-height: 4ch;
