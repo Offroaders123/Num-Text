@@ -1,12 +1,3 @@
-declare global {
-  interface CSSStyleSheet {
-    replace(text: string): Promise<CSSStyleSheet>;
-  }
-  interface ShadowRoot {
-    adoptedStyleSheets: CSSStyleSheet[];
-  }
-}
-
 const stylesheet = new CSSStyleSheet();
 const styles = fetch("../src/style.css");
 

@@ -1,0 +1,27 @@
+{
+  "name": "num-text",
+  "version": "2.0.0",
+  "description": "A simple Web Component that adds line numbers and syntax highlighting to the default textarea element!",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Offroaders123/Num-Text-Component.git"
+  },
+  "keywords": [
+    "javascript",
+    "editor",
+    "mobile",
+    "web-components",
+    "vanilla-javascript",
+    "desktop",
+    "text-editor"
+  ],
+  "author": "Brandon Bennett <offroaders123@gmail.com> (https://github.com/Offroaders123)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Offroaders123/Num-Text-Component/issues"
+  },
+  "homepage": "https://github.com/Offroaders123/Num-Text-Component#readme"
+}
