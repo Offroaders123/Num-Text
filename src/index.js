@@ -1,3 +1,5 @@
+import "https://unpkg.com/construct-style-sheets-polyfill";
+
 const stylesheet = new CSSStyleSheet();
 const styles = fetch(new URL("./style.css",import.meta.url));
 
@@ -78,13 +80,21 @@ export class NumTextElement extends HTMLElement {
     this.refreshGutter();
   }
 
+  /**
+   * Returns the runtime-exact line count for the textarea's value.
+   * 
+   * The similar, yet different {@linkcode NumTextElement.prototype.lineCount}
+   * getter method instead returns what the stored line count was in relation
+   * to the most recent textarea value change. For performance in mind, the
+   * getter is a better option.
+  */
   getLineCount() {
     return (this.#textarea.value.match(/\n/g) || []).length + 1;
   }
 
   /**
    * Returns an array that lists the character indices for all
-   * instances of the string within the editor's value.
+   * instances of the supplied string within the textarea's value.
    * 
    * @param { string } string
   */
@@ -94,6 +104,10 @@ export class NumTextElement extends HTMLElement {
     return result;
   }
 
+  /**
+   * Updates the visible line count within the gutter.
+   * This is called automatically for every textarea value change.
+  */
   refreshGutter() {
     const previous = this.#lineCount;
     const next = this.getLineCount();
@@ -104,8 +118,7 @@ export class NumTextElement extends HTMLElement {
       const line = document.createElement("li");
       line.part.add("line-number");
 
-      /** @type { HTMLLIElement[] } */
-      const lines = Array(difference).fill(line.cloneNode());
+      const lines = Array.from({ length: difference },() => /** @type { HTMLLIElement } */ (line.cloneNode()));
       this.#gutter.append(...lines);
     } else {
       for (let i = 0; i < Math.abs(difference); i++){
@@ -116,21 +129,17 @@ export class NumTextElement extends HTMLElement {
     this.#lineCount = next;
   }
 
+  /**
+   * Updates the gutter's vertical scroll position to match
+   * that of the textarea's. This is automatically called
+   * for every textarea scroll position change.
+  */
   refreshScroll() {
-    const { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.#textarea;
+    const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#textarea;
 
-    const scrollRight = clientWidth + scrollLeft;
     const scrollBottom = clientHeight + scrollTop;
-    const scrollBarWidth = offsetWidth - clientWidth;
     const scrollBarHeight = offsetHeight - clientHeight;
-    const overScrollX = (scrollLeft < 0 || scrollRight > scrollWidth) ? (scrollLeft < 0) ? scrollLeft : scrollRight - scrollWidth : 0;
     const overScrollY = (scrollTop < 0 || scrollBottom > scrollHeight) ? (scrollTop < 0) ? scrollTop : scrollBottom - scrollHeight : 0;
-
-    if (scrollBarWidth > 0){
-      this.#gutter.style.setProperty("--overflow-offset-x",`${scrollBarWidth}px`);
-    } else {
-      this.#gutter.style.removeProperty("--overflow-offset-x");
-    }
 
     if (scrollBarHeight > 0){
       this.#gutter.style.setProperty("--overflow-offset-y",`${scrollBarHeight}px`);
@@ -138,49 +147,17 @@ export class NumTextElement extends HTMLElement {
       this.#gutter.style.removeProperty("--overflow-offset-y");
     }
 
-    if (overScrollX === 0){
-      this.#gutter.style.removeProperty("--overscroll-left");
-      this.#gutter.style.removeProperty("--overscroll-right");
-    }
-    
-    if (overScrollX < 0){
-      this.#gutter.style.setProperty("--overscroll-left",`${Math.abs(overScrollX)}px`);
-    }
-    
-    if (overScrollX > 0){
-      this.#gutter.style.setProperty("--overscroll-right",`${overScrollX}px`);
-    }
-
     if (overScrollY === 0){
       this.#gutter.style.removeProperty("--overscroll-top");
       this.#gutter.style.removeProperty("--overscroll-bottom");
-    }
-
-    if (overScrollY < 0){
+    } else if (overScrollY < 0){
       this.#gutter.style.setProperty("--overscroll-top",`${Math.abs(overScrollY)}px`);
-    }
-
-    if (overScrollY > 0){
+    } else {
       this.#gutter.style.setProperty("--overscroll-bottom",`${overScrollY}px`);
     }
 
     if (this.#gutter.scrollTop !== scrollTop){
       this.#gutter.scrollTop = scrollTop;
-    }
-  }
-
-  /**
-   * Performs a text replacement on the editor's value.
-   * 
-   * Uses the same function parameters as {@linkcode String.prototype.replace()}.
-   * 
-   * @param { string | RegExp } searchValue
-   * @param { string } replaceValue
-  */
-  replace(searchValue,replaceValue) {
-    const result = this.#textarea.value.replace(searchValue,replaceValue);
-    if (result !== this.#textarea.value){
-      this.value = result;
     }
   }
 
@@ -193,6 +170,9 @@ export class NumTextElement extends HTMLElement {
     this.#textarea.focus(options);
   }
 
+  /**
+   * Blurs the component's internal textarea element.
+  */
   blur() {
     this.#textarea.blur();
   }
@@ -212,7 +192,7 @@ export class NumTextElement extends HTMLElement {
   }
 
   /**
-   * Returns the line count for the editor's value.
+   * Returns the line count for the component's value.
   */
   get lineCount() {
     return this.#lineCount;
@@ -220,7 +200,7 @@ export class NumTextElement extends HTMLElement {
 
   /**
    * Returns an array that lists the character indices for all
-   * line breaks within the editor's value.
+   * line breaks within the component's value.
   */
   get lineIndices() {
     const indices = this.getStringIndices("\n");
@@ -247,7 +227,7 @@ export class NumTextElement extends HTMLElement {
   }
 
   get value() {
-    return this.#value;
+    return this.#textarea.value;
   }
 }
 
