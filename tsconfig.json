@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./types",
+    "module": "ESNext",
+    "target": "ESNext",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "strict": true
+  }
+}
