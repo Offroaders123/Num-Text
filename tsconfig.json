@@ -1,15 +1,10 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./types",
-    "allowJs": true,
-    "checkJs": true,
+    "outDir": "./dist",
     "module": "ESNext",
     "target": "ESNext",
-    "noEmit": true,
+    "declaration": true,
     "strict": true
-  },
-  "include": [
-    "./src/**/*"
-  ]
+  }
 }

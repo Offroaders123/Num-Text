@@ -1,6 +1,6 @@
 // @ts-check
 
-import { NumTextElement } from "../src/index.js";
+import { NumTextElement } from "../dist/index.js";
 
 const editor = /** @type { NumTextElement } */ (document.querySelector("num-text"));
 

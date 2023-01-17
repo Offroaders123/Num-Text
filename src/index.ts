@@ -1,7 +1,7 @@
 import "https://unpkg.com/construct-style-sheets-polyfill";
 
 const stylesheet = new CSSStyleSheet();
-const styles = fetch(new URL("./style.css",import.meta.url));
+const styles = fetch(new URL("../style.css",import.meta.url));
 
 styles.then(async response => {
   const result = await response.text();
@@ -31,7 +31,7 @@ export class NumTextElement extends HTMLElement {
     this.#isDefined = true;
 
     this.addEventListener("mousedown",event => {
-      const [target] = /** @type { Element[] } */ (event.composedPath());
+      const [target] = event.composedPath() as Element[];
       if (target === this.#textarea) return;
 
       event.preventDefault();
@@ -41,7 +41,7 @@ export class NumTextElement extends HTMLElement {
     this.#gutter.part.add("gutter");
 
     this.#gutter.addEventListener("mousedown",event => {
-      const index = [...this.#gutter.children].indexOf(/** @type { Element } */ (event.target));
+      const index = [...this.#gutter.children].indexOf(event.target as Element);
       const lineIndex = this.lineIndices[index];
       this.#textarea.setSelectionRange(lineIndex,lineIndex);
       this.blur();
@@ -49,7 +49,7 @@ export class NumTextElement extends HTMLElement {
 
     this.#gutter.addEventListener("dblclick",event => {
       const indices = this.lineIndices;
-      const line = [...this.#gutter.children].indexOf(/** @type { Element } */ (event.target));
+      const line = [...this.#gutter.children].indexOf(event.target as Element);
       const lineStartIndex = indices[line];
       const lineEndIndex = (line + 1 in indices) ? indices[line + 1] : this.#textarea.value.length;
       this.#textarea.setSelectionRange(lineStartIndex,lineEndIndex);
@@ -95,12 +95,10 @@ export class NumTextElement extends HTMLElement {
   /**
    * Returns an array that lists the character indices for all
    * instances of the supplied string within the textarea's value.
-   * 
-   * @param { string } string
   */
-  getStringIndices(string) {
+  getStringIndices(string: string) {
     const matches = [...this.#textarea.value.matchAll(new RegExp(string,"g"))];
-    const result = /** @type { number[] } */ (matches.map(match => match.index));
+    const result = matches.map(match => match.index!);
     return result;
   }
 
@@ -118,7 +116,7 @@ export class NumTextElement extends HTMLElement {
       const line = document.createElement("li");
       line.part.add("line-number");
 
-      const lines = Array.from({ length: difference },() => /** @type { HTMLLIElement } */ (line.cloneNode()));
+      const lines = Array.from({ length: difference },() => line.cloneNode() as HTMLLIElement);
       this.#gutter.append(...lines);
     } else {
       for (let i = 0; i < Math.abs(difference); i++){
@@ -163,10 +161,8 @@ export class NumTextElement extends HTMLElement {
 
   /**
    * Focuses the component's internal textarea element.
-   * 
-   * @param { FocusOptions } [options]
   */
-  focus(options) {
+  focus(options?: FocusOptions) {
     this.#textarea.focus(options);
   }
 
@@ -211,10 +207,7 @@ export class NumTextElement extends HTMLElement {
     return indices;
   }
 
-  /**
-   * @param { string } value
-  */
-  set value(value) {
+  set value(value: string) {
     const { activeElement } = document;
     if (activeElement !== this){
       this.focus({ preventScroll: true });
