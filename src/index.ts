@@ -1,9 +1,5 @@
 import stylesheet from "../style.css" assert { type: "css" };
 
-/**
- * A simple Web Component that adds line numbers to native textarea elements.
- * It extends the base HTMLElement class.
-*/
 export class NumText extends HTMLElement {
   #isDefined = false;
   #gutter = document.createElement("ol");
@@ -73,32 +69,16 @@ export class NumText extends HTMLElement {
     this.refreshGutter();
   }
 
-  /**
-   * Returns the runtime-exact line count for the textarea's value.
-   * 
-   * The similar, yet different `NumText.prototype.lineCount`
-   * getter method instead returns what the stored line count was in relation
-   * to the most recent textarea value change. For performance in mind, the
-   * getter is a better option.
-  */
   getLineCount() {
     return (this.#textarea.value.match(/\n/g) || []).length + 1;
   }
 
-  /**
-   * Returns an array that lists the character indices for all
-   * instances of the supplied string within the textarea's value.
-  */
   getStringIndices(string: string) {
     const matches = [...this.#textarea.value.matchAll(new RegExp(string,"g"))];
     const result = matches.map(match => match.index!);
     return result;
   }
 
-  /**
-   * Updates the visible line count within the gutter.
-   * This is called automatically for every textarea value change.
-  */
   refreshGutter() {
     const previous = this.#lineCount;
     const next = this.getLineCount();
@@ -120,11 +100,6 @@ export class NumText extends HTMLElement {
     this.#lineCount = next;
   }
 
-  /**
-   * Updates the gutter's vertical scroll position to match
-   * that of the textarea's. This is automatically called
-   * for every textarea scroll position change.
-  */
   refreshScroll() {
     const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#textarea;
 
@@ -152,45 +127,26 @@ export class NumText extends HTMLElement {
     }
   }
 
-  /**
-   * Focuses the component's internal textarea element.
-  */
   focus(options?: FocusOptions) {
     this.#textarea.focus(options);
   }
 
-  /**
-   * Blurs the component's internal textarea element.
-  */
   blur() {
     this.#textarea.blur();
   }
 
-  /**
-   * References the component's internal gutter element.
-  */
   get gutter() {
     return this.#gutter;
   }
 
-  /**
-   * References the component's internal textarea element
-  */
   get textarea() {
     return this.#textarea;
   }
 
-  /**
-   * Returns the line count for the component's value.
-  */
   get lineCount() {
     return this.#lineCount;
   }
 
-  /**
-   * Returns an array that lists the character indices for all
-   * line breaks within the component's value.
-  */
   get lineIndices() {
     const indices = this.getStringIndices("\n");
     for (const index in indices){
