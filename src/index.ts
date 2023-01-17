@@ -1,29 +1,22 @@
-import "https://unpkg.com/construct-style-sheets-polyfill";
-
-const stylesheet = new CSSStyleSheet();
-const styles = fetch(new URL("../style.css",import.meta.url));
-
-styles.then(async response => {
-  const result = await response.text();
-  stylesheet.replace(result);
-});
+import stylesheet from "../style.css" assert { type: "css" };
 
 /**
  * A simple Web Component that adds line numbers to native textarea elements.
- * It extends the base {@linkcode HTMLElement} class.
+ * It extends the base HTMLElement class.
 */
-export class NumTextElement extends HTMLElement {
-  #shadowRoot;
+export class NumText extends HTMLElement {
   #isDefined = false;
   #gutter = document.createElement("ol");
   #textarea = document.createElement("textarea");
   #lineCount = 0;
-  #value = this.textContent || "";
+  #value = this.textContent ?? "";
+
+  declare readonly shadowRoot: ShadowRoot;
 
   constructor() {
     super();
-    this.#shadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
-    this.#shadowRoot.adoptedStyleSheets = [stylesheet];
+    this.attachShadow({ mode: "open", delegatesFocus: true });
+    this.shadowRoot.adoptedStyleSheets = [stylesheet];
   }
 
   connectedCallback() {
@@ -75,7 +68,7 @@ export class NumTextElement extends HTMLElement {
       this.#gutter.style.height = `${this.#textarea.offsetHeight}px`;
     }).observe(this.#textarea);
 
-    this.#shadowRoot.append(this.#gutter,this.#textarea);
+    this.shadowRoot.append(this.#gutter,this.#textarea);
     this.#textarea.setSelectionRange(0,0);
     this.refreshGutter();
   }
@@ -83,7 +76,7 @@ export class NumTextElement extends HTMLElement {
   /**
    * Returns the runtime-exact line count for the textarea's value.
    * 
-   * The similar, yet different {@linkcode NumTextElement.prototype.lineCount}
+   * The similar, yet different `NumText.prototype.lineCount`
    * getter method instead returns what the stored line count was in relation
    * to the most recent textarea value change. For performance in mind, the
    * getter is a better option.
@@ -224,4 +217,12 @@ export class NumTextElement extends HTMLElement {
   }
 }
 
-window.customElements.define("num-text",NumTextElement);
+window.customElements.define("num-text",NumText);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "num-text": NumText;
+  }
+}
+
+export default NumText;

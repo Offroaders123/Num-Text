@@ -6,6 +6,8 @@
 <title>Num Text</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<script type="module" src="./polyfill.js"></script>
+<script type="module" src="./app.js"></script>
 
 <style>
   :root {
@@ -26,18 +28,13 @@
 <body>
 
 <h1>Num Text</h1>
-
 <p>A simple Web Component that adds line numbers to native textarea elements!</p>
 
 <num-text>A fancy Num Text editor :)</num-text>
-
 <textarea>A default textarea</textarea>
 
 <p><button onclick="document.documentElement.classList.toggle('dark');">Toggle Color Scheme</button></p>
-
 <p><a href="https://github.com/Offroaders123/NBT-Parser">Open source on GitHub!</a></p>
-
-<script type="module" src="./app.js"></script>
 
 </body>
 
