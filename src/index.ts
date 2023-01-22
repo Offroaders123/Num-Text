@@ -1,87 +1,80 @@
 import stylesheet from "../style.css" assert { type: "css" };
 
 export class NumText extends HTMLElement {
-  #isDefined = false;
   #gutter = document.createElement("ol");
-  #textarea = document.createElement("textarea");
+  #editor = document.createElement("textarea");
   #lineCount = 0;
-  #value = this.textContent ?? "";
 
-  declare readonly shadowRoot: ShadowRoot;
+  readonly shadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open", delegatesFocus: true });
-    this.shadowRoot.adoptedStyleSheets = [stylesheet];
-  }
-
-  connectedCallback() {
-    if (this.#isDefined || !this.isConnected) return;
-    this.#isDefined = true;
 
     this.addEventListener("mousedown",event => {
       const [target] = event.composedPath() as Element[];
-      if (target === this.#textarea) return;
+      if (target === this.#editor) return;
 
       event.preventDefault();
-      this.#textarea.focus({ preventScroll: !this.#gutter.contains(target) });
+      this.#editor.focus({ preventScroll: !this.#gutter.contains(target) });
     });
 
     this.#gutter.part.add("gutter");
 
     this.#gutter.addEventListener("mousedown",event => {
       const index = [...this.#gutter.children].indexOf(event.target as Element);
-      const lineIndex = this.lineIndices[index];
-      this.#textarea.setSelectionRange(lineIndex,lineIndex);
+      const lineIndex = this.#lineIndices[index];
+      this.#editor.setSelectionRange(lineIndex,lineIndex);
       this.blur();
     });
 
     this.#gutter.addEventListener("dblclick",event => {
-      const indices = this.lineIndices;
+      const indices = this.#lineIndices;
       const line = [...this.#gutter.children].indexOf(event.target as Element);
       const lineStartIndex = indices[line];
-      const lineEndIndex = (line + 1 in indices) ? indices[line + 1] : this.#textarea.value.length;
-      this.#textarea.setSelectionRange(lineStartIndex,lineEndIndex);
+      const lineEndIndex = (line + 1 in indices) ? indices[line + 1] : this.#editor.value.length;
+      this.#editor.setSelectionRange(lineStartIndex,lineEndIndex);
     });
 
-    this.#textarea.part.add("textarea");
-    this.#textarea.wrap = "off";
-    this.#textarea.spellcheck = false;
-    this.#textarea.autocomplete = "off";
-    this.#textarea.autocapitalize = "none";
-    this.#textarea.value = this.#value;
-    this.#textarea.setAttribute("autocorrect","off");
+    this.#editor.part.add("editor");
+    this.#editor.wrap = "off";
+    this.#editor.spellcheck = false;
+    this.#editor.autocomplete = "off";
+    this.#editor.autocapitalize = "none";
+    this.#editor.value = this.textContent ?? "";
+    this.#editor.setAttribute("autocorrect","off");
 
-    this.#textarea.addEventListener("input",() => {
-      this.refreshGutter();
+    this.#editor.addEventListener("input",() => {
+      this.#refreshGutter();
     });
 
-    this.#textarea.addEventListener("scroll",() => {
-      this.refreshScroll();
+    this.#editor.addEventListener("scroll",() => {
+      this.#refreshScroll();
     },{ passive: true });
 
     new ResizeObserver(() => {
-      this.#gutter.style.height = `${this.#textarea.offsetHeight}px`;
-    }).observe(this.#textarea);
+      this.#gutter.style.height = `${this.#editor.offsetHeight}px`;
+    }).observe(this.#editor);
 
-    this.shadowRoot.append(this.#gutter,this.#textarea);
-    this.#textarea.setSelectionRange(0,0);
-    this.refreshGutter();
+    this.shadowRoot.adoptedStyleSheets = [stylesheet];
+    this.shadowRoot.append(this.#gutter,this.#editor);
+
+    this.#editor.setSelectionRange(0,0);
+    this.#refreshGutter();
   }
 
-  getLineCount() {
-    return (this.#textarea.value.match(/\n/g) || []).length + 1;
+  #getLineCount() {
+    return (this.#editor.value.match(/\n/g) || []).length + 1;
   }
 
-  getStringIndices(string: string) {
-    const matches = [...this.#textarea.value.matchAll(new RegExp(string,"g"))];
+  #getStringIndices(string: string) {
+    const matches = [...this.#editor.value.matchAll(new RegExp(string,"g"))];
     const result = matches.map(match => match.index!);
     return result;
   }
 
-  refreshGutter() {
+  #refreshGutter() {
     const previous = this.#lineCount;
-    const next = this.getLineCount();
+    const next = this.#getLineCount();
     const difference = next - previous;
     if (difference === 0) return;
 
@@ -100,8 +93,8 @@ export class NumText extends HTMLElement {
     this.#lineCount = next;
   }
 
-  refreshScroll() {
-    const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#textarea;
+  #refreshScroll() {
+    const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#editor;
 
     const scrollBottom = clientHeight + scrollTop;
     const scrollBarHeight = offsetHeight - clientHeight;
@@ -128,27 +121,27 @@ export class NumText extends HTMLElement {
   }
 
   focus(options?: FocusOptions) {
-    this.#textarea.focus(options);
+    this.#editor.focus(options);
   }
 
   blur() {
-    this.#textarea.blur();
+    this.#editor.blur();
   }
 
   get gutter() {
     return this.#gutter;
   }
 
-  get textarea() {
-    return this.#textarea;
+  get editor() {
+    return this.#editor;
   }
 
   get lineCount() {
     return this.#lineCount;
   }
 
-  get lineIndices() {
-    const indices = this.getStringIndices("\n");
+  get #lineIndices() {
+    const indices = this.#getStringIndices("\n");
     for (const index in indices){
       indices[index]++;
     }
@@ -161,7 +154,7 @@ export class NumText extends HTMLElement {
     if (activeElement !== this){
       this.focus({ preventScroll: true });
     }
-    this.#textarea.select();
+    this.#editor.select();
     document.execCommand("insertText",false,value);
     if (activeElement !== this && activeElement instanceof HTMLElement){
       activeElement.focus({ preventScroll: true });
@@ -169,7 +162,7 @@ export class NumText extends HTMLElement {
   }
 
   get value() {
-    return this.#textarea.value;
+    return this.#editor.value;
   }
 }
 
