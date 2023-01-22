@@ -1,7 +1,5 @@
 // @ts-check
 
-import NumText from "../dist/index.js";
+import "../dist/index.js";
 
-const editor = /** @type { NumText } */ (document.querySelector("num-text"));
-
-editor.value = document.documentElement.outerHTML;
+const myEditor = document.querySelector("num-text");
