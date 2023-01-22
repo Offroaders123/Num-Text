@@ -22,13 +22,13 @@ export class NumText extends HTMLElement {
 
     this.#gutter.addEventListener("mousedown",event => {
       const index = [...this.#gutter.children].indexOf(event.target as Element);
-      const lineIndex = this.#lineIndices[index];
+      const lineIndex = this.#getLineIndices()[index];
       this.#editor.setSelectionRange(lineIndex,lineIndex);
       this.blur();
     });
 
     this.#gutter.addEventListener("dblclick",event => {
-      const indices = this.#lineIndices;
+      const indices = this.#getLineIndices();
       const line = [...this.#gutter.children].indexOf(event.target as Element);
       const lineStartIndex = indices[line];
       const lineEndIndex = (line + 1 in indices) ? indices[line + 1] : this.#editor.value.length;
@@ -60,16 +60,6 @@ export class NumText extends HTMLElement {
 
     this.#editor.setSelectionRange(0,0);
     this.#refreshGutter();
-  }
-
-  #getLineCount() {
-    return (this.#editor.value.match(/\n/g) || []).length + 1;
-  }
-
-  #getStringIndices(string: string) {
-    const matches = [...this.#editor.value.matchAll(new RegExp(string,"g"))];
-    const result = matches.map(match => match.index!);
-    return result;
   }
 
   #refreshGutter() {
@@ -120,6 +110,22 @@ export class NumText extends HTMLElement {
     }
   }
 
+  #getLineCount() {
+    const { length } = this.#editor.value.match(/\n/g) ?? [];
+    return length + 1;
+  }
+
+  #getLineIndices() {
+    const matches = [...this.#editor.value.matchAll(/\n/g)];
+    const indices = [0];
+
+    for (const { index } of matches){
+      indices.push(index! + 1);
+    }
+
+    return indices;
+  }
+
   focus(options?: FocusOptions) {
     this.#editor.focus(options);
   }
@@ -138,15 +144,6 @@ export class NumText extends HTMLElement {
 
   get lineCount() {
     return this.#lineCount;
-  }
-
-  get #lineIndices() {
-    const indices = this.#getStringIndices("\n");
-    for (const index in indices){
-      indices[index]++;
-    }
-    indices.unshift(0);
-    return indices;
   }
 
   set value(value: string) {
