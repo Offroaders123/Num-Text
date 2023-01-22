@@ -44,7 +44,7 @@ export class NumText extends HTMLElement {
     this.#editor.setAttribute("autocorrect","off");
 
     this.#editor.addEventListener("input",() => {
-      this.#refreshGutter();
+      this.#renderGutter();
     });
 
     this.#editor.addEventListener("scroll",() => {
@@ -59,28 +59,36 @@ export class NumText extends HTMLElement {
     this.shadowRoot.append(this.#gutter,this.#editor);
 
     this.#editor.setSelectionRange(0,0);
-    this.#refreshGutter();
+    this.#renderGutter();
   }
 
-  #refreshGutter() {
+  #renderGutter() {
     const previous = this.#lineCount;
     const next = this.#getLineCount();
     const difference = next - previous;
     if (difference === 0) return;
 
     if (difference > 0){
-      const line = document.createElement("li");
-      line.part.add("line-number");
-
-      const lines = Array.from({ length: difference },() => line.cloneNode() as HTMLLIElement);
-      this.#gutter.append(...lines);
+      this.#addLineNumbers(difference);
     } else {
-      for (let i = 0; i < Math.abs(difference); i++){
-        this.#gutter.lastChild?.remove();
-      }
+      this.#removeLineNumbers(Math.abs(difference));
     }
 
     this.#lineCount = next;
+  }
+
+  #addLineNumbers(length: number) {
+    const template = document.createElement("li");
+    template.part.add("line-number");
+
+    const lineNumbers = Array.from({ length },() => template.cloneNode() as HTMLLIElement);
+    this.#gutter.append(...lineNumbers);
+  }
+
+  #removeLineNumbers(length: number) {
+    for (let i = 0; i < length; i++){
+      this.#gutter.lastChild?.remove();
+    }
   }
 
   #refreshScroll() {
@@ -146,6 +154,10 @@ export class NumText extends HTMLElement {
     return this.#lineCount;
   }
 
+  get value() {
+    return this.#editor.value;
+  }
+
   set value(value: string) {
     const { activeElement } = document;
     if (activeElement !== this){
@@ -156,10 +168,6 @@ export class NumText extends HTMLElement {
     if (activeElement !== this && activeElement instanceof HTMLElement){
       activeElement.focus({ preventScroll: true });
     }
-  }
-
-  get value() {
-    return this.#editor.value;
   }
 }
 
