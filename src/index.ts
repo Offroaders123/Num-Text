@@ -10,13 +10,13 @@ export class NumText extends HTMLElement {
   constructor() {
     super();
 
-    this.addEventListener("mousedown",event => {
-      const [target] = event.composedPath() as Element[];
-      if (target === this.#editor) return;
+    // this.addEventListener("mousedown",event => {
+    //   const [target] = event.composedPath() as Element[];
+    //   if (target === this.#editor) return;
 
-      event.preventDefault();
-      this.#editor.focus({ preventScroll: !this.#gutter.contains(target) });
-    });
+    //   event.preventDefault();
+    //   this.#editor.focus({ preventScroll: !this.#gutter.contains(target) });
+    // });
 
     this.#gutter.part.add("gutter");
 
@@ -45,21 +45,23 @@ export class NumText extends HTMLElement {
 
     this.#editor.addEventListener("input",() => {
       this.#renderGutter();
+      this.#renderOverflow();
     });
 
-    this.#editor.addEventListener("scroll",() => {
-      this.#refreshScroll();
-    },{ passive: true });
+    // this.#editor.addEventListener("scroll",() => {
+    //   this.#renderOverflow();
+    // },{ passive: true });
 
-    new ResizeObserver(() => {
-      this.#gutter.style.height = `${this.#editor.offsetHeight}px`;
-    }).observe(this.#editor);
+    // new ResizeObserver(() => {
+    //   this.#gutter.style.height = `${this.#editor.offsetHeight}px`;
+    // }).observe(this.#editor);
 
     this.shadowRoot.adoptedStyleSheets = [stylesheet];
     this.shadowRoot.append(this.#gutter,this.#editor);
 
     this.#editor.setSelectionRange(0,0);
     this.#renderGutter();
+    this.#renderOverflow();
   }
 
   #renderGutter() {
@@ -91,31 +93,19 @@ export class NumText extends HTMLElement {
     }
   }
 
-  #refreshScroll() {
-    const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#editor;
+  #renderOverflow() {
+    this.#editor.style.width = "0";
+    this.#editor.style.minWidth = "0";
+    this.#editor.style.height = "0";
 
-    const scrollBottom = clientHeight + scrollTop;
-    const scrollBarHeight = offsetHeight - clientHeight;
-    const overScrollY = (scrollTop < 0 || scrollBottom > scrollHeight) ? (scrollTop < 0) ? scrollTop : scrollBottom - scrollHeight : 0;
+    const { scrollWidth: editorWidth, scrollHeight: editorHeight } = this.#editor;
 
-    if (scrollBarHeight > 0){
-      this.#gutter.style.setProperty("--overflow-offset-y",`${scrollBarHeight}px`);
-    } else {
-      this.#gutter.style.removeProperty("--overflow-offset-y");
-    }
+    // console.log(scrollWidth,scrollHeight);
 
-    if (overScrollY === 0){
-      this.#gutter.style.removeProperty("--overscroll-top");
-      this.#gutter.style.removeProperty("--overscroll-bottom");
-    } else if (overScrollY < 0){
-      this.#gutter.style.setProperty("--overscroll-top",`${Math.abs(overScrollY)}px`);
-    } else {
-      this.#gutter.style.setProperty("--overscroll-bottom",`${overScrollY}px`);
-    }
+    this.#gutter.style.height = `${editorHeight}px`;
 
-    if (this.#gutter.scrollTop !== scrollTop){
-      this.#gutter.scrollTop = scrollTop;
-    }
+    this.#editor.style.minWidth = `${editorWidth}px`;
+    this.#editor.style.height = `${editorHeight}px`;
   }
 
   #getLineCount() {

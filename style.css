@@ -1,4 +1,6 @@
 :host {
+  /* background: rebeccapurple; */
+
   display: inline-flex;
   vertical-align: bottom;
   color: FieldText;
@@ -8,11 +10,21 @@
   background: Field;
   border: 1px solid #808080;
   border-radius: 3px;
-  overflow: hidden;
+  /* overflow: hidden; */
   cursor: text;
   -webkit-user-select: none;
   user-select: none;
   -webkit-text-size-adjust: 100%;
+
+  min-width: 4ch;
+  min-height: 4ch;
+  width: 26ch;
+  height: 11ch;
+
+  overflow: auto;
+  resize: both;
+
+  isolation: isolate;
 }
 
 :host {
@@ -23,7 +35,13 @@
   outline: auto;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 ol {
+  /* background: #f008; */
+
   counter-reset: line;
   margin: 0;
   padding: 0;
@@ -33,7 +51,15 @@ ol {
   list-style-position: inside;
   list-style-type: none;
   text-align: right;
-  overflow: hidden;
+  /* overflow: hidden; */
+
+  position: sticky;
+  left: 0;
+  top: 0;
+  min-height: 100%;
+
+  background: inherit;
+  z-index: -1;
 }
 
 li {
@@ -47,26 +73,20 @@ li::before {
 }
 
 li:first-child {
-  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
+  padding-top: var(--padding);
 }
 
 li:last-child {
-  padding-bottom: calc(var(--padding) + var(--overscroll-bottom,0px));
+  padding-bottom: var(--padding);
   flex-basis: 100%;
-}
-
-li:last-child::after {
-  content: "";
-  display: block;
-  height: var(--overflow-offset-y,0px);
 }
 
 textarea {
   padding: var(--padding);
-  min-width: 4ch;
+  /* min-width: 4ch;
   min-height: 4ch;
   width: 20ch;
-  height: 8ch;
+  height: 8ch; */
   color: inherit;
   font: inherit;
   background: none;
@@ -75,4 +95,12 @@ textarea {
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+
+  flex-basis: 100%;
+  min-height: 100%;
+
+  overflow: hidden;
+  resize: none;
+
+  z-index: -2;
 }
