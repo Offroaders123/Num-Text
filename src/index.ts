@@ -1,6 +1,9 @@
 type NumTextThemeType = "any" | "syntax-highlight" | "user-agent";
 
 interface NumTextTheme {
+  /**
+   * Defines whether the theme should be used for regular styling, syntax highlighting, or is a built-in theme provided by Num Text.
+  */
   type: NumTextThemeType;
   url?: string;
   stylesheet: HTMLStyleElement;
@@ -15,6 +18,9 @@ interface NumTextThemeEntries {
 }
 
 interface NumTextDefineThemeOptions {
+  /**
+   * Defines whether the theme should be used for regular styling, syntax highlighting, or is a built-in theme provided by Num Text.
+  */
   type?: NumTextThemeType;
   url?: string;
   template?: HTMLTemplateElement;
@@ -41,6 +47,9 @@ var NumText = {
   themes: {
     entries: {} as NumTextThemeEntries,
 
+    /**
+     * Creates a new theme definition to be applied to your own Num Text elements.
+    */
     define(name: string, { type = "any", url, template, content = "" }: NumTextDefineThemeOptions = {}) {
       if (NumText.themes.has(name)){
         return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
@@ -68,6 +77,9 @@ var NumText = {
       }
     },
 
+    /**
+     * Updates the stylesheet content for an already defined theme. The changes will be synced to all Num Text elements that have that theme applied.
+    */
     async update({ name, url, content = null }: NumTextUpdateThemeOptions) {
       if (!NumText.themes.has(name)){
         return console.error(new ReferenceError(`Could not update theme "${name}", as it has not been defined in the global NumText object.`));
@@ -90,6 +102,9 @@ var NumText = {
       return await response.text();
     },
 
+    /**
+     * This provides a legacy fallback for browsers that don't yet support the `:is()` or `:where()` selectors in CSS, and it will use the `:-webkit-any()` selector instead. This is applied to all themes automatically.
+    */
     _tempBackwardsCompatibility_(content: string) {
       if (CSS.supports("not selector(:is())")){
         content = content.replace(/:is\(/g,":-webkit-any(");
@@ -100,6 +115,9 @@ var NumText = {
       return content;
     },
 
+    /**
+     * Deletes the root theme definition, and removes the theme from all Num Text elements that apply it.
+    */
     remove(name: string) {
       if (!NumText.themes.has(name)){
         return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not been defined in the global NumText object.`));
@@ -109,6 +127,9 @@ var NumText = {
       delete NumText.themes.entries[name];
     },
 
+    /**
+     * Checks if a given theme has been defined.
+    */
     has(name: string) {
       return (name in NumText.themes.entries);
     }
@@ -139,8 +160,17 @@ class NumTextElement extends HTMLElement {
   declare readonly shadowRoot: ShadowRoot;
 
   #isDefined;
+  /**
+   * A namespace which manages the color scheme of the element.
+  */
   declare readonly colorScheme;
+  /**
+   * A namespace which manages the themes applied to the element.
+  */
   declare readonly themes;
+  /**
+   * A namespace which manages the syntax highlighting within the editor.
+  */
   declare readonly syntaxHighlight;
 
   declare readonly container;
@@ -164,6 +194,9 @@ class NumTextElement extends HTMLElement {
         return this.colorScheme.get();
       },
 
+      /**
+       * Toggles between the light and dark color schemes.
+      */
       toggle: () => {
         this.classList.toggle("color-scheme-dark");
         return this.colorScheme.get();
@@ -177,6 +210,11 @@ class NumTextElement extends HTMLElement {
     this.themes = {
       entries: {} as NumTextLocalThemes,
 
+      /**
+       * Adds a defined theme to the element.
+       * 
+       * Only one syntax highlighting theme can be applied at a time. If one is already applied to the element, it will be removed.
+      */
       add: (name: string) => {
         if (!NumText.themes.has(name)){
           return console.error(new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not been defined in the global NumText object.`));
@@ -203,6 +241,9 @@ class NumTextElement extends HTMLElement {
         NumText.themes.entries[name].elements.push(this);
       },
 
+      /**
+       * Removes an applied theme from the element.
+      */
       remove: (name: string) => {
         if (!this.themes.has(name)){
           return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not been added to ${this}.`));
@@ -214,10 +255,16 @@ class NumTextElement extends HTMLElement {
         NumText.themes.entries[name].elements.splice(NumText.themes.entries[name].elements.indexOf(this));
       },
 
+      /**
+       * Checks if a given theme has been applied to the element.
+      */
       has: (name: string) => {
         return (name in this.themes.entries);
       },
 
+      /**
+       * Re-enables an applied theme which was previously hidden.
+      */
       enable: (name: string) => {
         if (!this.themes.has(name)){
           return console.error(new ReferenceError(`Could not enable theme "${name}", as it has not been added to ${this}.`));
@@ -227,6 +274,11 @@ class NumTextElement extends HTMLElement {
         this.themes.entries[name].stylesheet.removeAttribute("media");
       },
 
+      /**
+       * Hides an applied theme in-place.
+       * 
+       * This is useful for performance if you plan to add it again later, as it won't actually remove it from the element.
+      */
       disable: (name: string) => {
         if (!this.themes.has(name)){
           return console.error(new ReferenceError(`Could not disable theme "${name}", as it has not been added to ${this}.`));
@@ -236,11 +288,17 @@ class NumTextElement extends HTMLElement {
         this.themes.entries[name].stylesheet.media = "not all";
       },
 
+      /**
+       * Checks if an applied theme is currently enabled or disabled.
+      */
       active: (name: string) => {
         if (!this.themes.has(name)) return;
         return this.themes.entries[name].active;
       },
 
+      /**
+       * Toggles the active state of an applied theme, between enabled and disabled.
+      */
       toggle: (name: string) => {
         if (!this.themes.has(name)){
           return console.error(new ReferenceError(`Could not toggle theme "${name}", as it has not been added to ${this}.`));
@@ -255,6 +313,11 @@ class NumTextElement extends HTMLElement {
         return this.themes.active(name);
       },
 
+      /**
+       * Returns an array for all applied themes on the element.
+       * 
+       * This does not include the built-in theme provided by Num Text.
+      */
       getAll: (type: NumTextThemeType) => {
         return Object.keys(this.themes.entries).filter(theme => {
           return (!type) ? (this.themes.entries[theme].type != "user-agent") : type == this.themes.entries[theme].type;
@@ -276,6 +339,9 @@ class NumTextElement extends HTMLElement {
         this.themes.getAll("syntax-highlight").forEach(theme => this.themes.disable(theme));
       },
 
+      /**
+       * Checks if syntax highlighting is currently enabled.
+      */
       active: () => {
         return this.matches("[syntax-highlight]");
       },
@@ -494,6 +560,9 @@ class NumTextElement extends HTMLElement {
     }
   }
 
+  /**
+   * Returns the numerical indices of a given character (string) within the editor.
+  */
   getCharacterIndexes(character: string) {
     const list = [];
     let i = -1;
@@ -504,6 +573,9 @@ class NumTextElement extends HTMLElement {
     return list;
   }
 
+  /**
+   * Returns the numerical indices of the lines within the editor.
+  */
   getLineIndexes() {
     const indexes = this.getCharacterIndexes("\n");
 
@@ -511,6 +583,9 @@ class NumTextElement extends HTMLElement {
     return indexes;
   }
 
+  /**
+   * Performs a find and replace for a given pattern or string within the editor.
+  */
   replace(pattern: string | RegExp, value: string) {
     const replaced = this.editor.value.replace(pattern,value);
 
@@ -531,6 +606,9 @@ class NumTextElement extends HTMLElement {
     return this.#isDefined;
   }
 
+  /**
+   * Retrieves or sets the language to use for Prism's syntax highlighting tokenization.
+  */
   get syntaxLanguage() {
     return this.getAttribute("syntax-language") ?? "";
   }
@@ -540,6 +618,9 @@ class NumTextElement extends HTMLElement {
     this.refreshLineNumbers();
   }
 
+  /**
+   * Retrieves or sets the text within the editor.
+  */
   get value() {
     return this.editor.value;
   }
@@ -572,6 +653,9 @@ class NumTextElement extends HTMLElement {
     this.editor.disabled = state;
   }
 
+  /**
+   * Retrieves or sets whether the editor is in read-only mode.
+  */
   get readonly() {
     return this.editor.readOnly;
   }
