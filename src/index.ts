@@ -136,6 +136,8 @@ NumText.themes.define("vanilla-highlighting",{
 })();
 
 class NumTextElement extends HTMLElement {
+  declare readonly shadowRoot: ShadowRoot;
+
   declare defined;
   declare colorScheme;
   declare themes;
@@ -197,7 +199,7 @@ class NumTextElement extends HTMLElement {
           this.themes.disable(name);
         }
 
-        this.shadowRoot?.insertBefore(this.themes.entries[name].stylesheet,this.container);
+        this.shadowRoot.insertBefore(this.themes.entries[name].stylesheet,this.container);
         NumText.themes.entries[name].elements.push(this);
       },
 
@@ -206,7 +208,7 @@ class NumTextElement extends HTMLElement {
           return console.error(new ReferenceError(`Could not remove theme "${name}", as it has not been added to ${this}.`));
         }
 
-        this.shadowRoot?.removeChild(this.themes.entries[name].stylesheet);
+        this.shadowRoot.removeChild(this.themes.entries[name].stylesheet);
         delete this.themes.entries[name];
 
         NumText.themes.entries[name].elements.splice(NumText.themes.entries[name].elements.indexOf(this));
@@ -356,14 +358,14 @@ class NumTextElement extends HTMLElement {
       this.refreshScrollPosition();
     }).observe(this.editor);
 
-    this.shadowRoot?.appendChild(this.container);
+    this.shadowRoot.appendChild(this.container);
 
     this.themes.add("vanilla-layout");
     this.themes.add("vanilla-appearance");
     this.themes.add("vanilla-highlighting");
 
     if (this.matches("[themes]")){
-      this.getAttribute("themes")?.split(" ").forEach(theme => this.themes.add(theme));
+      this.getAttribute("themes")!.split(" ").forEach(theme => this.themes.add(theme));
     }
 
     this.container.appendChild(this.gutter);
