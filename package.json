@@ -1,9 +1,35 @@
 {
   "name": "num-text",
   "version": "1.0.0",
+  "description": "A simple text editor Web Component for the browser!",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "dev": "npx tsc -w"
+  },
   "devDependencies": {
     "@types/prismjs": "^1.26.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Offroaders123/Num-Text.git"
+  },
+  "keywords": [
+    "javascript",
+    "editor",
+    "mobile",
+    "web-components",
+    "vanilla-javascript",
+    "desktop",
+    "text-editor"
+  ],
+  "author": "Brandon Bennett <offroaders123@gmail.com> (https://github.com/Offroaders123)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Offroaders123/Num-Text/issues"
+  },
+  "homepage": "https://github.com/Offroaders123/Num-Text#readme",
+  "sideEffects": true
 }
