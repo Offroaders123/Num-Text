@@ -1,55 +1,55 @@
-type ThemeType = "any" | "syntax-highlight" | "user-agent";
+type NumTextThemeType = "any" | "syntax-highlight" | "user-agent";
 
-interface Theme {
-  type: ThemeType;
+interface NumTextTheme {
+  type: NumTextThemeType;
   url?: string;
   stylesheet: HTMLStyleElement;
 }
 
-interface ThemeEntry extends Theme {
+interface NumTextThemeEntry extends NumTextTheme {
   elements: NumTextElement[];
 }
 
-interface ThemeEntries {
-  [name: string]: ThemeEntry;
+interface NumTextThemeEntries {
+  [name: string]: NumTextThemeEntry;
 }
 
-interface DefineThemeOptions {
-  type?: ThemeType;
+interface NumTextDefineThemeOptions {
+  type?: NumTextThemeType;
   url?: string;
   template?: HTMLTemplateElement;
   content?: string;
 }
 
-interface UpdateThemeOptions {
+interface NumTextUpdateThemeOptions {
   name: string;
   url?: string;
   content?: string | null;
 }
 
-type ColorScheme = "light" | "dark";
+type NumTextColorScheme = "light" | "dark";
 
-interface LocalTheme extends Theme {
+interface NumTextLocalTheme extends NumTextTheme {
   active: boolean;
 }
 
-interface LocalThemes {
-  [name: string]: LocalTheme;
+interface NumTextLocalThemes {
+  [name: string]: NumTextLocalTheme;
 }
 
 var NumText = {
   themes: {
-    entries: <ThemeEntries>{},
-    define(name: string, { type = "any", url, template, content = "" }: DefineThemeOptions = {}) {
+    entries: {} as NumTextThemeEntries,
+    define(name: string, { type = "any", url, template, content = "" }: NumTextDefineThemeOptions = {}) {
       if (NumText.themes.has(name)) return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
       var stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
       if (!url) stylesheet.textContent = NumText.themes._tempBackwardsCompatibility_((template) ? template.content.querySelector(`[num-text-theme="${name}"]`)!.textContent! : content);
-      NumText.themes.entries[name] = { type, ...url && {url}, stylesheet, elements: [] } as ThemeEntry;
+      NumText.themes.entries[name] = { type, ...url && {url}, stylesheet, elements: [] } as NumTextThemeEntry;
       if (url) NumText.themes.update({ name, url });
     },
-    async update({ name, url, content = null }: UpdateThemeOptions) {
+    async update({ name, url, content = null }: NumTextUpdateThemeOptions) {
       if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Could not update theme "${name}", as it has not been defined in the global NumText object.`));
       if (!url && content == undefined) return console.error(new ReferenceError(`Could not update theme "${name}". Please provide a stylesheet URL or CSS content.`));
       if (url) content = await NumText.themes.fetch((url == "refresh") ? NumText.themes.entries[name].url! : url);
@@ -112,7 +112,7 @@ class NumTextElement extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this.defined = false;
     this.colorScheme = {
-      set: (appearance: ColorScheme) => {
+      set: (appearance: NumTextColorScheme) => {
         var state = this.colorScheme.get();
         if (appearance == state) return state;
         if (appearance == "light") this.classList.remove("color-scheme-dark");
@@ -123,18 +123,18 @@ class NumTextElement extends HTMLElement {
         this.classList.toggle("color-scheme-dark");
         return this.colorScheme.get();
       },
-      get: (): ColorScheme => {
+      get: (): NumTextColorScheme => {
         return (!this.matches(".color-scheme-dark")) ? "light" : "dark";
       }
     },
     this.themes = {
-      entries: <LocalThemes>{},
+      entries: {} as NumTextLocalThemes,
       add: (name: string) => {
         if (!NumText.themes.has(name)) return console.error(new ReferenceError(`Cound not add theme "${name}" to ${this}, as it has not been defined in the global NumText object.`));
         if (this.themes.has(name)) return;
         var { type, stylesheet } = NumText.themes.entries[name];
         if (type == "syntax-highlight") this.themes.getAll("syntax-highlight").forEach(theme => this.themes.remove(theme));
-        this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true) as HTMLStyleElement, active: true } as LocalTheme;
+        this.themes.entries[name] = { type, stylesheet: stylesheet.cloneNode(true) as HTMLStyleElement, active: true } as NumTextLocalTheme;
         if (type == "syntax-highlight" && !this.matches("[syntax-highlight]")) this.themes.disable(name);
         this.shadowRoot?.insertBefore(this.themes.entries[name].stylesheet,this.container);
         NumText.themes.entries[name].elements.push(this);
@@ -165,7 +165,7 @@ class NumTextElement extends HTMLElement {
         (!this.themes.active(name)) ? this.themes.enable(name) : this.themes.disable(name);
         return this.themes.active(name);
       },
-      getAll: (type: ThemeType) => Object.keys(this.themes.entries).filter(theme => (!type) ? (this.themes.entries[theme].type != "user-agent") : type == this.themes.entries[theme].type)
+      getAll: (type: NumTextThemeType) => Object.keys(this.themes.entries).filter(theme => (!type) ? (this.themes.entries[theme].type != "user-agent") : type == this.themes.entries[theme].type)
     };
     this.syntaxHighlight = {
       enable: () => {
