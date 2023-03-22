@@ -46,7 +46,7 @@ var NumText = {
         return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
       }
 
-      var stylesheet = document.createElement("style");
+      const stylesheet = document.createElement("style");
       stylesheet.setAttribute("num-text-theme",name);
       stylesheet.setAttribute("num-text-theme-type",type);
 
@@ -86,7 +86,7 @@ var NumText = {
     },
 
     async fetch(url: string) {
-      var response = await fetch(url);
+      const response = await fetch(url);
       return await response.text();
     },
 
@@ -117,7 +117,7 @@ var NumText = {
 
 (() => {
 
-var importMetaURL = (document.currentScript! as HTMLScriptElement).src;
+const importMetaURL = (document.currentScript! as HTMLScriptElement).src;
 
 NumText.themes.define("vanilla-layout",{
   type: "user-agent",
@@ -138,25 +138,25 @@ NumText.themes.define("vanilla-highlighting",{
 class NumTextElement extends HTMLElement {
   declare readonly shadowRoot: ShadowRoot;
 
-  declare defined;
-  declare colorScheme;
-  declare themes;
-  declare syntaxHighlight;
+  #isDefined;
+  declare readonly colorScheme;
+  declare readonly themes;
+  declare readonly syntaxHighlight;
 
-  declare container: HTMLDivElement;
-  declare gutter: HTMLOListElement;
-  declare content: HTMLDivElement;
-  declare syntax: HTMLPreElement;
-  declare editor: HTMLTextAreaElement;
+  declare readonly container;
+  declare readonly gutter;
+  declare readonly content;
+  declare readonly syntax;
+  declare readonly editor;
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
-    this.defined = false;
+    this.#isDefined = false;
 
     this.colorScheme = {
       set: (appearance: NumTextColorScheme) => {
-        var state = this.colorScheme.get();
+        const state = this.colorScheme.get();
 
         if (appearance == state) return state;
         if (appearance == "light") this.classList.remove("color-scheme-dark");
@@ -183,7 +183,7 @@ class NumTextElement extends HTMLElement {
         }
         if (this.themes.has(name)) return;
 
-        var { type, stylesheet } = NumText.themes.entries[name];
+        const { type, stylesheet } = NumText.themes.entries[name];
 
         if (type == "syntax-highlight"){
           this.themes.getAll("syntax-highlight").forEach(theme => this.themes.remove(theme));
@@ -288,36 +288,40 @@ class NumTextElement extends HTMLElement {
         }
       }
     };
+
+    this.container = document.createElement("div");
+    this.gutter = document.createElement("ol");
+    this.content = document.createElement("div");
+    this.syntax = document.createElement("pre");
+    this.editor = document.createElement("textarea");
   }
 
   connectedCallback() {
-    if (this.defined || !this.isConnected) return;
-    this.defined = true;
+    if (this.#isDefined || !this.isConnected) return;
+    this.#isDefined = true;
 
     this.addEventListener("mousedown",event => {
-      var target = event.composedPath()[0] as HTMLElement;
+      const target = event.composedPath()[0] as HTMLElement;
       if (target == this.editor) return;
 
       event.preventDefault();
       this.focus({ preventScroll: (!this.gutter.contains(target)) });
     });
 
-    this.container = document.createElement("div");
     this.container.part.add("container");
 
-    this.gutter = document.createElement("ol");
     this.gutter.part.add("gutter");
 
     this.gutter.addEventListener("mousedown",event => {
-      var index = this.getLineIndexes()[Array.from(this.gutter.children).indexOf(event.target as HTMLElement)];
+      const index = this.getLineIndexes()[Array.from(this.gutter.children).indexOf(event.target as HTMLElement)];
 
       this.editor.setSelectionRange(index,index);
       this.blur();
     });
 
     this.gutter.addEventListener("dblclick",event => {
-      var indexes = this.getLineIndexes();
-      var line = Array.from(this.gutter.children).indexOf(event.target as HTMLElement);
+      const indexes = this.getLineIndexes();
+      const line = Array.from(this.gutter.children).indexOf(event.target as HTMLElement);
 
       this.editor.setSelectionRange(indexes[line],(line + 1 in indexes) ? indexes[line + 1] : this.editor.value.length);
     });
@@ -326,13 +330,10 @@ class NumTextElement extends HTMLElement {
       this.refreshScrollPosition();
     },{ passive: true });
 
-    this.content = document.createElement("div");
     this.content.part.add("content");
 
-    this.syntax = document.createElement("pre");
     this.syntax.part.add("syntax");
 
-    this.editor = document.createElement("textarea");
     this.editor.part.add("editor");
     this.editor.placeholder = this.getAttribute("placeholder") || "";
     this.editor.wrap = "off";
@@ -385,15 +386,15 @@ class NumTextElement extends HTMLElement {
   refreshLineNumbers() {
     this.refreshSyntaxOverlay();
 
-    var previousCount = Number(this.getAttribute("line-count") || 0);
-    var count = (this.editor.value.match(/\n/g) || []).length + 1;
-    var difference = count - previousCount;
+    const previousCount = Number(this.getAttribute("line-count") || 0);
+    const count = (this.editor.value.match(/\n/g) || []).length + 1;
+    const difference = count - previousCount;
 
     if (difference == 0) return;
 
     if (difference > 0){
-      var fragment = new DocumentFragment();
-      var lineNumber = document.createElement("li");
+      const fragment = new DocumentFragment();
+      const lineNumber = document.createElement("li");
 
       lineNumber.part.add("line-number");
 
@@ -429,19 +430,19 @@ class NumTextElement extends HTMLElement {
   }
 
   refreshScrollPosition() {
-    var { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
+    const { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
 
-    var scrollbarWidth = offsetWidth - clientWidth;
-    var scrollbarHeight = offsetHeight - clientHeight;
+    const scrollbarWidth = offsetWidth - clientWidth;
+    const scrollbarHeight = offsetHeight - clientHeight;
 
-    var overscrollX: number | false =
+    const overscrollX: number | false =
       (scrollLeft < 0 || (clientWidth + scrollLeft) > scrollWidth)
         ? (scrollLeft < 0)
           ? scrollLeft
           : (clientWidth + scrollLeft) - scrollWidth
         : false;
 
-    var overscrollY: number | false =
+    const overscrollY: number | false =
       (scrollTop < 0 || (clientHeight + scrollTop) > scrollHeight)
         ? (scrollTop < 0)
           ? scrollTop
@@ -494,7 +495,7 @@ class NumTextElement extends HTMLElement {
   }
 
   getCharacterIndexes(character: string) {
-    var list = [];
+    const list = [];
     let i = -1;
 
     while ((i = this.editor.value.indexOf(character,i + 1)) >= 0){
@@ -504,14 +505,14 @@ class NumTextElement extends HTMLElement {
   }
 
   getLineIndexes() {
-    var indexes = this.getCharacterIndexes("\n");
+    const indexes = this.getCharacterIndexes("\n");
 
     indexes.unshift(0);
     return indexes;
   }
 
   replace(pattern: string | RegExp, value: string) {
-    var replaced = this.editor.value.replace(pattern,value);
+    const replaced = this.editor.value.replace(pattern,value);
 
     if (replaced != this.editor.value){
       this.value = replaced;
@@ -524,6 +525,10 @@ class NumTextElement extends HTMLElement {
 
   blur() {
     this.editor.blur();
+  }
+
+  get defined() {
+    return this.#isDefined;
   }
 
   get syntaxLanguage() {
@@ -540,7 +545,7 @@ class NumTextElement extends HTMLElement {
   }
 
   set value(content: string) {
-    var active = document.activeElement as HTMLElement;
+    const active = document.activeElement as HTMLElement;
 
     if (active != this.editor){
       this.focus({ preventScroll: true });
