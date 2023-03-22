@@ -76,17 +76,25 @@ var NumText = {
     }
   }
 };
+
+(() => {
+
+const importMetaURL = (document.currentScript! as HTMLScriptElement).src;
+
 NumText.themes.define("vanilla-layout",{
   type: "user-agent",
-  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-layout.css"
+  url: `${new URL("../styles/vanilla-layout.css",importMetaURL)}`
 });
 NumText.themes.define("vanilla-appearance",{
-  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-appearance.css"
+  url: `${new URL("../styles/vanilla-appearance.css",importMetaURL)}`
 });
 NumText.themes.define("vanilla-highlighting",{
   type: "syntax-highlight",
-  url: "https://offroaders123.github.io/Num-Text-Component/vanilla-highlighting.css"
+  url: `${new URL("../styles/vanilla-highlighting.css",importMetaURL)}`
 });
+
+})();
+
 class NumTextElement extends HTMLElement {
   declare defined;
   declare colorScheme;
@@ -322,5 +330,8 @@ class NumTextElement extends HTMLElement {
     (state) ? this.setAttribute("readonly","") : this.removeAttribute("readonly");
     this.editor.readOnly = state;
   }
+}
+interface HTMLElementTagNameMap {
+  "num-text": NumTextElement;
 }
 window.customElements.define("num-text",NumTextElement);
