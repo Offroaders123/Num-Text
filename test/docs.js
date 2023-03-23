@@ -37,9 +37,15 @@ thingo.colorScheme.set("light");
 thingo.colorScheme.toggle();
 
 thingo.themes.add("vsc");
+thingo.themes.has("vsc");
+thingo.themes.remove("vs");
+
 thingo.themes.disable("vsc");
 thingo.themes.active("vsc");
 thingo.themes.toggle("vsc");
+thingo.themes.enable("vsc");
+
+thingo.themes.getAll();
 
 thingo.syntaxHighlight.active();
 thingo.syntaxHighlight.enable();

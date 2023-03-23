@@ -354,11 +354,11 @@ class NumTextElement extends HTMLElement {
       },
 
       /**
-       * Returns an array for all applied themes on the element.
+       * Returns an array for all applied themes applied to the element of a given theme type. The default theme type is 'any'.
        * 
-       * This does not include the built-in theme provided by Num Text.
+       * The built-in theme provided by Num Text will not be included unless the 'user-agent' theme type is specified.
       */
-      getAll: (type: NumTextThemeType) => {
+      getAll: (type: NumTextThemeType = "any") => {
         return Object.keys(this.themes.entries).filter(theme => {
           return (!type) ? (this.themes.entries[theme].type != "user-agent") : type == this.themes.entries[theme].type;
         });
