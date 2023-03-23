@@ -2,7 +2,7 @@ type NumTextThemeType = "any" | "syntax-highlight" | "user-agent";
 
 interface NumTextTheme {
   /**
-   * Defines whether the theme should be used for regular styling, syntax highlighting, or is a built-in theme provided by Num Text.
+   * Defines whether the theme is used for regular styling, syntax highlighting, or is a built-in theme provided by Num Text.
   */
   type: NumTextThemeType;
   url?: string;
@@ -22,14 +22,33 @@ interface NumTextDefineThemeOptions {
    * Defines whether the theme should be used for regular styling, syntax highlighting, or is a built-in theme provided by Num Text.
   */
   type?: NumTextThemeType;
-  url?: string;
+  url?: RequestInfo | URL;
+  /**
+   * Accepts a `<template>` element which contains a `<style>` element with the `num-text-theme` attribute attached to it, and the attribute's value matching that of the theme name.
+   * 
+   * ```html
+   * <template id="my-custom-theme-template">
+   *   <style num-text-theme="my-custom-theme">
+   *     :host {
+   *       background: lime;
+   *     }
+   *   </style>
+   * </template>
+   * 
+   * <script type="module">
+   *   await NumText.themes.define("my-custom-theme",{
+   *     template: document.querySelector("#my-custom-theme-template")
+   *   });
+   * </script>
+   * ```
+  */
   template?: HTMLTemplateElement;
   content?: string;
 }
 
 interface NumTextUpdateThemeOptions {
   name: string;
-  url?: string;
+  url?: RequestInfo | URL;
   content?: string | null;
 }
 
@@ -43,14 +62,20 @@ interface NumTextLocalThemes {
   [name: string]: NumTextLocalTheme;
 }
 
+/**
+ * A global namespace to manage the configurations for Num Text.
+*/
 var NumText = {
+  /**
+   * A namespace which manages the theme definitions available for Num Text elements.
+  */
   themes: {
     entries: {} as NumTextThemeEntries,
 
     /**
-     * Creates a new theme definition to be applied to your own Num Text elements.
+     * Creates a new theme definition which can be applied to your own Num Text elements. This will resolve to a failed Promise if a theme by the given name is already defined.
     */
-    define(name: string, { type = "any", url, template, content = "" }: NumTextDefineThemeOptions = {}) {
+    async define(name: string, { type = "any", url, template, content = "" }: NumTextDefineThemeOptions = {}) {
       if (NumText.themes.has(name)){
         return console.error(new ReferenceError(`Could not define theme "${name}", as it has already been defined in the global NumText object. If you would like to update an existing theme's content, use NumText.themes.update() instead.`));
       }
@@ -73,7 +98,7 @@ var NumText = {
       } as NumTextThemeEntry;
 
       if (url){
-        NumText.themes.update({ name, url });
+        await NumText.themes.update({ name, url });
       }
     },
 
@@ -97,7 +122,7 @@ var NumText = {
       NumText.themes.entries[name].elements.forEach(element => element.themes.entries[name].stylesheet.textContent = content);
     },
 
-    async fetch(url: string) {
+    async fetch(url: RequestInfo | URL) {
       const response = await fetch(url);
       return await response.text();
     },
@@ -116,7 +141,7 @@ var NumText = {
     },
 
     /**
-     * Deletes the root theme definition, and removes the theme from all Num Text elements that apply it.
+     * Deletes the definition for a given theme, and removes the theme from all Num Text elements that apply it.
     */
     remove(name: string) {
       if (!NumText.themes.has(name)){
@@ -173,10 +198,25 @@ class NumTextElement extends HTMLElement {
   */
   declare readonly syntaxHighlight;
 
+  /**
+   * The internal wrapper for all of the element's visible Shadow DOM content.
+  */
   declare readonly container;
+  /**
+   * The internal line numbers section of the element.
+  */
   declare readonly gutter;
+  /**
+   * The internal wrapper which ensures the alignment of the syntax highlighting layer to the internal textarea.
+  */
   declare readonly content;
+  /**
+   * The internal syntax highlighting layer of the element.
+  */
   declare readonly syntax;
+  /**
+   * The internal textarea of the element.
+  */
   declare readonly editor;
 
   constructor() {
@@ -449,6 +489,9 @@ class NumTextElement extends HTMLElement {
     this.refreshLineNumbers();
   }
 
+  /**
+   * Re-renders the internal line numbers section of the element to reflect the internal textarea's value.
+  */
   refreshLineNumbers() {
     this.refreshSyntaxOverlay();
 
@@ -480,6 +523,9 @@ class NumTextElement extends HTMLElement {
     this.refreshScrollPosition();
   }
 
+  /**
+   * Re-renders the internal syntax highlighting layer with Prism to reflect the internal textarea's value.
+  */
   refreshSyntaxOverlay() {
     if (!this.matches("[syntax-highlight][syntax-language]")) return;
 
@@ -495,6 +541,11 @@ class NumTextElement extends HTMLElement {
     this.syntax.innerHTML = Prism.highlight(tokened,Prism.languages[this.getAttribute("syntax-language")!],"");
   }
 
+  /**
+   * Syncs the scroll positions for the internal line numbers section and the internal syntax highlighing layer to that of the internal textarea.
+   * 
+   * Overscroll effects use by some platforms when scrolling past the bounds of the internal textarea's scroll box are also synced.
+  */
   refreshScrollPosition() {
     const { offsetWidth, offsetHeight, clientWidth, clientHeight, scrollWidth, scrollHeight, scrollLeft, scrollTop } = this.editor;
 
@@ -660,7 +711,7 @@ class NumTextElement extends HTMLElement {
     return this.editor.readOnly;
   }
 
-  set readonly(state) {
+  set readonly(state: boolean) {
     if (state){
       this.setAttribute("readonly","");
     } else {
