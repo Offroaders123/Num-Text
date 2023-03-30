@@ -1,7 +1,7 @@
 # Num Text
 
-[![npm](https://img.shields.io/npm/v/num-text.svg)](https://www.npmjs.com/package/num-text)
-[![downloads](https://img.shields.io/npm/dm/num-text.svg)](https://www.npmjs.com/package/num-text)
+[![npm](https://img.shields.io/npm/v/@stedit/num-text.svg)](https://www.npmjs.com/package/@stedit/num-text)
+[![downloads](https://img.shields.io/npm/dm/@stedit/num-text.svg)](https://www.npmjs.com/package/@stedit/num-text)
 
 A simple Web Component that adds line numbers and syntax highlighting to the default textarea element!
 
@@ -16,7 +16,7 @@ To use a `<num-text>` element in your own page, follow the steps written below:
 1. Add the component's script tag to the `<head>` of your page. This will register the component as a custom element that you will be able to use in your HTML and JavaScript.
 
     ```html
-    <script src="https://cdn.jsdelivr.net/npm/num-text/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stedit/num-text/dist/index.min.js"></script>
     ```
 
 2. Add a `<num-text>` element to the page using any of the ways you would for a default HTML element. Now you are ready to start editing!

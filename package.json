@@ -1,5 +1,5 @@
 {
-  "name": "num-text",
+  "name": "@stedit/num-text",
   "version": "1.0.0",
   "description": "A simple text editor Web Component for the browser!",
   "type": "module",
