@@ -1,4 +1,4 @@
-import stylesheet from "../style.css" assert { type: "css" };
+import stylesheet from "../styles/style.css" assert { type: "css" };
 
 export class NumText extends HTMLElement {
   #gutter = document.createElement("ol");
@@ -62,7 +62,7 @@ export class NumText extends HTMLElement {
     this.#renderGutter();
   }
 
-  #renderGutter() {
+  #renderGutter(): void {
     const previous = this.#lineCount;
     const next = this.#getLineCount();
     const difference = next - previous;
@@ -77,7 +77,7 @@ export class NumText extends HTMLElement {
     this.#lineCount = next;
   }
 
-  #addLineNumbers(length: number) {
+  #addLineNumbers(length: number): void {
     const template = document.createElement("li");
     template.part.add("line-number");
 
@@ -85,13 +85,13 @@ export class NumText extends HTMLElement {
     this.#gutter.append(...lineNumbers);
   }
 
-  #removeLineNumbers(length: number) {
+  #removeLineNumbers(length: number): void {
     for (let i = 0; i < length; i++){
       this.#gutter.lastChild?.remove();
     }
   }
 
-  #refreshScroll() {
+  #refreshScroll(): void {
     const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#editor;
 
     const scrollBottom = clientHeight + scrollTop;
@@ -118,12 +118,12 @@ export class NumText extends HTMLElement {
     }
   }
 
-  #getLineCount() {
+  #getLineCount(): number {
     const { length } = this.#editor.value.match(/\n/g) ?? [];
     return length + 1;
   }
 
-  #getLineIndices() {
+  #getLineIndices(): number[] {
     const matches = [...this.#editor.value.matchAll(/\n/g)];
     const indices = [0];
 
@@ -134,27 +134,27 @@ export class NumText extends HTMLElement {
     return indices;
   }
 
-  override focus(options?: FocusOptions) {
+  override focus(options?: FocusOptions): void {
     this.#editor.focus(options);
   }
 
-  override blur() {
+  override blur(): void {
     this.#editor.blur();
   }
 
-  get gutter() {
+  get gutter(): HTMLOListElement {
     return this.#gutter;
   }
 
-  get editor() {
+  get editor(): HTMLTextAreaElement {
     return this.#editor;
   }
 
-  get lineCount() {
+  get lineCount(): number {
     return this.#lineCount;
   }
 
-  get value() {
+  get value(): string {
     return this.#editor.value;
   }
 
