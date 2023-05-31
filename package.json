@@ -1,16 +1,17 @@
 {
   "name": "@stedit/num-text",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple text editor Web Component for the browser!",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc",
-    "dev": "npx tsc -w"
+    "build": "tsc",
+    "dev": "tsc -w"
   },
   "devDependencies": {
-    "@types/prismjs": "^1.26.0"
+    "@types/prismjs": "^1.26.0",
+    "typescript": "^5.0.4"
   },
   "repository": {
     "type": "git",
