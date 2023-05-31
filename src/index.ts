@@ -5,7 +5,7 @@ export class NumText extends HTMLElement {
   #editor = document.createElement("textarea");
   #lineCount = 0;
 
-  readonly shadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
+  override readonly shadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
 
   constructor() {
     super();
@@ -134,11 +134,11 @@ export class NumText extends HTMLElement {
     return indices;
   }
 
-  focus(options?: FocusOptions) {
+  override focus(options?: FocusOptions) {
     this.#editor.focus(options);
   }
 
-  blur() {
+  override blur() {
     this.#editor.blur();
   }
 

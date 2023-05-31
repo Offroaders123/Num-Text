@@ -1,4 +1,7 @@
-# Num Text Component
+# Num Text
+
+[![npm](https://img.shields.io/npm/v/@stedit/num-text.svg)](https://www.npmjs.com/package/@stedit/num-text)
+[![downloads](https://img.shields.io/npm/dm/@stedit/num-text.svg)](https://www.npmjs.com/package/@stedit/num-text)
 
 A simple Web Component that adds line numbers and syntax highlighting to the default textarea element!
 
@@ -7,29 +10,27 @@ There are already plenty of code editors out there made for the browser, like [C
 ## Getting Started
 Thanks to the powerful [Web Components API](https://developer.mozilla.org/en-US/docs/Web/Web_Components), it's possible to create your own HTML elements that abstract away in-depth functionality that may otherwise be hard to work with manually. No need to import any stylesheets, or make any JavaScript calls. Just import the component's source into your page, and let the browser handle the rest!
 
-### Creating a Num Text Element
+### Creating a Num Text element
 To use a `<num-text>` element in your own page, follow the steps written below:
 
 1. Add the component's script tag to the `<head>` of your page. This will register the component as a custom element that you will be able to use in your HTML and JavaScript.
 
     ```html
-    <script src="https://offroaders123.github.io/Num-Text-Component/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stedit/num-text/dist/index.min.js"></script>
     ```
 
 2. Add a `<num-text>` element to the page using any of the ways you would for a default HTML element. Now you are ready to start editing!
 
     ```html
     <!-- Add it directly to your HTML -->
-
     <num-text></num-text>
     ```
     ```javascript
-    /*  Or create it with JavaScript  */
-
+    /* Or create it with JavaScript */
     const editor = document.createElement("num-text");
     ```
 
-### Styling a Num Text Element
+### Styling a Num Text element
 Changing the default styles of a `<num-text>` element is fairly simple! Check out how to customize each part of the component's appearance:
 
 ```html
