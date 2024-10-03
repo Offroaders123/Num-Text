@@ -21,14 +21,14 @@ export class NumText extends HTMLElement {
       if (target === this.#editor) return;
 
       event.preventDefault();
-      this.#editor.focus({ preventScroll: !this.#gutter.contains(target) });
+      this.#editor.focus({ preventScroll: !this.#gutter.contains(target!) });
     });
 
     this.#gutter.part.add("gutter");
 
     this.#gutter.addEventListener("mousedown",event => {
       const index = [...this.#gutter.children].indexOf(event.target as Element);
-      const lineIndex = this.#getLineIndices()[index];
+      const lineIndex = this.#getLineIndices()[index] ?? null;
       this.#editor.setSelectionRange(lineIndex,lineIndex);
       this.blur();
     });
@@ -36,8 +36,8 @@ export class NumText extends HTMLElement {
     this.#gutter.addEventListener("dblclick",event => {
       const indices = this.#getLineIndices();
       const line = [...this.#gutter.children].indexOf(event.target as Element);
-      const lineStartIndex = indices[line];
-      const lineEndIndex = (line + 1 in indices) ? indices[line + 1] : this.#editor.value.length;
+      const lineStartIndex = indices[line] ?? null;
+      const lineEndIndex = (line + 1 in indices) ? indices[line + 1] ?? null : this.#editor.value.length;
       this.#editor.setSelectionRange(lineStartIndex,lineEndIndex);
     });
 

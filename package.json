@@ -6,8 +6,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w"
+    "build": "tsc --project ./tsconfig.build.json",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "@types/prismjs": "^1.26.0",
