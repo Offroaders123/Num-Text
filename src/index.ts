@@ -1,4 +1,10 @@
-import stylesheet from "../styles/style.css" assert { type: "css" };
+const stylesheet = new CSSStyleSheet();
+const styles = fetch(new URL("../styles/style.css",import.meta.url));
+
+styles.then(async response => {
+  const result = await response.text();
+  stylesheet.replace(result);
+});
 
 export class NumText extends HTMLElement {
   #gutter = document.createElement("ol");
