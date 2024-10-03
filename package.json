@@ -29,8 +29,6 @@
   },
   "homepage": "https://github.com/Offroaders123/Num-Text#readme",
   "devDependencies": {
-    "construct-style-sheets-polyfill": "^3.1.0",
-    "es-module-shims": "^1.10.0",
     "typescript": "^5.6.2",
     "vite": "^5.4.8"
   },
