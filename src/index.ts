@@ -1,10 +1,7 @@
-const stylesheet = new CSSStyleSheet();
-const styles = fetch(new URL("../styles/style.css",import.meta.url));
+import styles from "../styles/style.css?inline";
 
-styles.then(async response => {
-  const result = await response.text();
-  stylesheet.replace(result);
-});
+const stylesheet = new CSSStyleSheet();
+stylesheet.replace(styles);
 
 export class NumText extends HTMLElement {
   #gutter = document.createElement("ol");

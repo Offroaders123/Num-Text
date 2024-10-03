@@ -1,5 +1,5 @@
 // @ts-check
 
-import "../dist/index.js";
+import "../src/index.ts";
 
 const myEditor = document.querySelector("num-text");
