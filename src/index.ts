@@ -4,11 +4,11 @@ const stylesheet = new CSSStyleSheet();
 stylesheet.replace(styles);
 
 export class NumText extends HTMLElement {
-  #gutter = document.createElement("ol");
-  #editor = document.createElement("textarea");
-  #lineCount = 0;
+  readonly #gutter: HTMLOListElement = document.createElement("ol");
+  readonly #editor: HTMLTextAreaElement = document.createElement("textarea");
+  #lineCount: number = 0;
 
-  override readonly shadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
+  override readonly shadowRoot: ShadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
 
   constructor() {
     super();
@@ -24,17 +24,17 @@ export class NumText extends HTMLElement {
     this.#gutter.part.add("gutter");
 
     this.#gutter.addEventListener("mousedown", event => {
-      const index = [...this.#gutter.children].indexOf(event.target as Element);
-      const lineIndex = this.#getLineIndices()[index] ?? null;
+      const index: number = [...this.#gutter.children].indexOf(event.target as Element);
+      const lineIndex: number | null = this.#getLineIndices()[index] ?? null;
       this.#editor.setSelectionRange(lineIndex, lineIndex);
       this.blur();
     });
 
     this.#gutter.addEventListener("dblclick", event => {
-      const indices = this.#getLineIndices();
-      const line = [...this.#gutter.children].indexOf(event.target as Element);
-      const lineStartIndex = indices[line] ?? null;
-      const lineEndIndex = (line + 1 in indices) ? indices[line + 1] ?? null : this.#editor.value.length;
+      const indices: number[] = this.#getLineIndices();
+      const line: number = [...this.#gutter.children].indexOf(event.target as Element);
+      const lineStartIndex: number | null = indices[line] ?? null;
+      const lineEndIndex: number | null = (line + 1 in indices) ? indices[line + 1] ?? null : this.#editor.value.length;
       this.#editor.setSelectionRange(lineStartIndex, lineEndIndex);
     });
 
@@ -66,9 +66,9 @@ export class NumText extends HTMLElement {
   }
 
   #renderGutter(): void {
-    const previous = this.#lineCount;
-    const next = this.#getLineCount();
-    const difference = next - previous;
+    const previous: number = this.#lineCount;
+    const next: number = this.#getLineCount();
+    const difference: number = next - previous;
     if (difference === 0) return;
 
     if (difference > 0) {
@@ -81,15 +81,15 @@ export class NumText extends HTMLElement {
   }
 
   #addLineNumbers(length: number): void {
-    const template = document.createElement("li");
+    const template: HTMLLIElement = document.createElement("li");
     template.part.add("line-number");
 
-    const lineNumbers = Array.from({ length }, () => template.cloneNode() as HTMLLIElement);
+    const lineNumbers: HTMLLIElement[] = Array.from({ length }, () => template.cloneNode() as HTMLLIElement);
     this.#gutter.append(...lineNumbers);
   }
 
   #removeLineNumbers(length: number): void {
-    for (let i = 0; i < length; i++) {
+    for (let i: number = 0; i < length; i++) {
       this.#gutter.lastChild?.remove();
     }
   }
@@ -97,9 +97,9 @@ export class NumText extends HTMLElement {
   #refreshScroll(): void {
     const { offsetHeight, clientHeight, scrollHeight, scrollTop } = this.#editor;
 
-    const scrollBottom = clientHeight + scrollTop;
-    const scrollBarHeight = offsetHeight - clientHeight;
-    const overScrollY = (scrollTop < 0 || scrollBottom > scrollHeight) ? (scrollTop < 0) ? scrollTop : scrollBottom - scrollHeight : 0;
+    const scrollBottom: number = clientHeight + scrollTop;
+    const scrollBarHeight: number = offsetHeight - clientHeight;
+    const overScrollY: number = (scrollTop < 0 || scrollBottom > scrollHeight) ? (scrollTop < 0) ? scrollTop : scrollBottom - scrollHeight : 0;
 
     if (scrollBarHeight > 0) {
       this.#gutter.style.setProperty("--overflow-offset-y", `${scrollBarHeight}px`);
@@ -127,8 +127,8 @@ export class NumText extends HTMLElement {
   }
 
   #getLineIndices(): number[] {
-    const matches = [...this.#editor.value.matchAll(/\n/g)];
-    const indices = [0];
+    const matches: RegExpExecArray[] = [...this.#editor.value.matchAll(/\n/g)];
+    const indices: number[] = [0];
 
     for (const { index } of matches) {
       indices.push(index! + 1);
