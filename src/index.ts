@@ -13,7 +13,7 @@ export class NumText extends HTMLElement {
   constructor() {
     super();
 
-    this.addEventListener("mousedown",event => {
+    this.addEventListener("mousedown", event => {
       const [target] = event.composedPath() as Element[];
       if (target === this.#editor) return;
 
@@ -23,19 +23,19 @@ export class NumText extends HTMLElement {
 
     this.#gutter.part.add("gutter");
 
-    this.#gutter.addEventListener("mousedown",event => {
+    this.#gutter.addEventListener("mousedown", event => {
       const index = [...this.#gutter.children].indexOf(event.target as Element);
       const lineIndex = this.#getLineIndices()[index] ?? null;
-      this.#editor.setSelectionRange(lineIndex,lineIndex);
+      this.#editor.setSelectionRange(lineIndex, lineIndex);
       this.blur();
     });
 
-    this.#gutter.addEventListener("dblclick",event => {
+    this.#gutter.addEventListener("dblclick", event => {
       const indices = this.#getLineIndices();
       const line = [...this.#gutter.children].indexOf(event.target as Element);
       const lineStartIndex = indices[line] ?? null;
       const lineEndIndex = (line + 1 in indices) ? indices[line + 1] ?? null : this.#editor.value.length;
-      this.#editor.setSelectionRange(lineStartIndex,lineEndIndex);
+      this.#editor.setSelectionRange(lineStartIndex, lineEndIndex);
     });
 
     this.#editor.part.add("editor");
@@ -44,24 +44,24 @@ export class NumText extends HTMLElement {
     this.#editor.autocomplete = "off";
     this.#editor.autocapitalize = "none";
     this.#editor.value = this.textContent ?? "";
-    this.#editor.setAttribute("autocorrect","off");
+    this.#editor.setAttribute("autocorrect", "off");
 
-    this.#editor.addEventListener("input",() => {
+    this.#editor.addEventListener("input", () => {
       this.#renderGutter();
     });
 
-    this.#editor.addEventListener("scroll",() => {
+    this.#editor.addEventListener("scroll", () => {
       this.#refreshScroll();
-    },{ passive: true });
+    }, { passive: true });
 
     new ResizeObserver(() => {
       this.#gutter.style.height = `${this.#editor.offsetHeight}px`;
     }).observe(this.#editor);
 
     this.shadowRoot.adoptedStyleSheets = [stylesheet];
-    this.shadowRoot.append(this.#gutter,this.#editor);
+    this.shadowRoot.append(this.#gutter, this.#editor);
 
-    this.#editor.setSelectionRange(0,0);
+    this.#editor.setSelectionRange(0, 0);
     this.#renderGutter();
   }
 
@@ -71,7 +71,7 @@ export class NumText extends HTMLElement {
     const difference = next - previous;
     if (difference === 0) return;
 
-    if (difference > 0){
+    if (difference > 0) {
       this.#addLineNumbers(difference);
     } else {
       this.#removeLineNumbers(Math.abs(difference));
@@ -84,12 +84,12 @@ export class NumText extends HTMLElement {
     const template = document.createElement("li");
     template.part.add("line-number");
 
-    const lineNumbers = Array.from({ length },() => template.cloneNode() as HTMLLIElement);
+    const lineNumbers = Array.from({ length }, () => template.cloneNode() as HTMLLIElement);
     this.#gutter.append(...lineNumbers);
   }
 
   #removeLineNumbers(length: number): void {
-    for (let i = 0; i < length; i++){
+    for (let i = 0; i < length; i++) {
       this.#gutter.lastChild?.remove();
     }
   }
@@ -101,22 +101,22 @@ export class NumText extends HTMLElement {
     const scrollBarHeight = offsetHeight - clientHeight;
     const overScrollY = (scrollTop < 0 || scrollBottom > scrollHeight) ? (scrollTop < 0) ? scrollTop : scrollBottom - scrollHeight : 0;
 
-    if (scrollBarHeight > 0){
-      this.#gutter.style.setProperty("--overflow-offset-y",`${scrollBarHeight}px`);
+    if (scrollBarHeight > 0) {
+      this.#gutter.style.setProperty("--overflow-offset-y", `${scrollBarHeight}px`);
     } else {
       this.#gutter.style.removeProperty("--overflow-offset-y");
     }
 
-    if (overScrollY === 0){
+    if (overScrollY === 0) {
       this.#gutter.style.removeProperty("--overscroll-top");
       this.#gutter.style.removeProperty("--overscroll-bottom");
-    } else if (overScrollY < 0){
-      this.#gutter.style.setProperty("--overscroll-top",`${Math.abs(overScrollY)}px`);
+    } else if (overScrollY < 0) {
+      this.#gutter.style.setProperty("--overscroll-top", `${Math.abs(overScrollY)}px`);
     } else {
-      this.#gutter.style.setProperty("--overscroll-bottom",`${overScrollY}px`);
+      this.#gutter.style.setProperty("--overscroll-bottom", `${overScrollY}px`);
     }
 
-    if (this.#gutter.scrollTop !== scrollTop){
+    if (this.#gutter.scrollTop !== scrollTop) {
       this.#gutter.scrollTop = scrollTop;
     }
   }
@@ -130,7 +130,7 @@ export class NumText extends HTMLElement {
     const matches = [...this.#editor.value.matchAll(/\n/g)];
     const indices = [0];
 
-    for (const { index } of matches){
+    for (const { index } of matches) {
       indices.push(index! + 1);
     }
 
@@ -163,18 +163,18 @@ export class NumText extends HTMLElement {
 
   set value(value: string) {
     const { activeElement } = document;
-    if (activeElement !== this){
+    if (activeElement !== this) {
       this.focus({ preventScroll: true });
     }
     this.#editor.select();
-    document.execCommand("insertText",false,value);
-    if (activeElement !== this && activeElement instanceof HTMLElement){
+    document.execCommand("insertText", false, value);
+    if (activeElement !== this && activeElement instanceof HTMLElement) {
       activeElement.focus({ preventScroll: true });
     }
   }
 }
 
-window.customElements.define("num-text",NumText);
+window.customElements.define("num-text", NumText);
 
 declare global {
   interface HTMLElementTagNameMap {

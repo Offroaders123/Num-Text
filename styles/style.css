@@ -47,18 +47,18 @@ li::before {
 }
 
 li:first-child {
-  padding-top: calc(var(--padding) + var(--overscroll-top,0px));
+  padding-top: calc(var(--padding) + var(--overscroll-top, 0px));
 }
 
 li:last-child {
-  padding-bottom: calc(var(--padding) + var(--overscroll-bottom,0px));
+  padding-bottom: calc(var(--padding) + var(--overscroll-bottom, 0px));
   flex-basis: 100%;
 }
 
 li:last-child::after {
   content: "";
   display: block;
-  height: var(--overflow-offset-y,0px);
+  height: var(--overflow-offset-y, 0px);
 }
 
 textarea {
