@@ -1,7 +1,7 @@
 import styles from "../styles/style.css?inline";
 
 const stylesheet = new CSSStyleSheet();
-stylesheet.replace(styles);
+stylesheet.replaceSync(styles);
 
 export class NumText extends HTMLElement {
   readonly #gutter: HTMLOListElement = document.createElement("ol");
