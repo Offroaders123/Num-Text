@@ -3,7 +3,7 @@ import styles from "../styles/style.css?inline";
 const stylesheet = new CSSStyleSheet();
 stylesheet.replaceSync(styles);
 
-export class NumText extends HTMLElement {
+export default class NumText extends HTMLElement {
   readonly #gutter: HTMLOListElement = document.createElement("ol");
   readonly #editor: HTMLTextAreaElement = document.createElement("textarea");
   #lineCount: number = 0;
@@ -174,12 +174,10 @@ export class NumText extends HTMLElement {
   }
 }
 
-window.customElements.define("num-text", NumText);
+customElements.define("num-text", NumText);
 
 declare global {
   interface HTMLElementTagNameMap {
     "num-text": NumText;
   }
 }
-
-export default NumText;
