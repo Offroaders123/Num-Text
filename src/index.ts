@@ -43,7 +43,7 @@ export class NumText extends HTMLElement {
     this.#editor.spellcheck = false;
     this.#editor.autocomplete = "off";
     this.#editor.autocapitalize = "none";
-    this.#editor.value = this.textContent ?? "";
+    this.#editor.value = this.getAttribute("value") ?? "";
     this.#editor.setAttribute("autocorrect", "off");
 
     this.#editor.addEventListener("input", () => {
