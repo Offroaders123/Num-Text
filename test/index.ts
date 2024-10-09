@@ -1,3 +1,3 @@
-import "../src/index.js";
+import "../dist/index.js";
 
 const myEditor = document.querySelector("num-text");

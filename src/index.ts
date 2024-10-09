@@ -8,10 +8,17 @@ export default class NumText extends HTMLElement {
   readonly #editor: HTMLTextAreaElement = document.createElement("textarea");
   #lineCount: number = 0;
 
+  @((target, context) => {
+    console.log(target, context);
+  })
+  accessor nice: number = 5;
+
   override readonly shadowRoot: ShadowRoot = this.attachShadow({ mode: "open", delegatesFocus: true });
 
   constructor() {
     super();
+
+    console.log(this.nice);
 
     this.addEventListener("mousedown", event => {
       const [target] = event.composedPath() as Element[];
