@@ -12,7 +12,11 @@ export default class NumText extends HTMLElement {
 
   constructor() {
     super();
+    this.shadowRoot.adoptedStyleSheets = [stylesheet];
+    this.shadowRoot.append(this.#gutter, this.#editor);
+  }
 
+  connectedCallback(): void {
     this.addEventListener("mousedown", event => {
       const [target] = event.composedPath() as Element[];
       if (target === this.#editor) return;
@@ -57,9 +61,6 @@ export default class NumText extends HTMLElement {
     new ResizeObserver(() => {
       this.#gutter.style.height = `${this.#editor.offsetHeight}px`;
     }).observe(this.#editor);
-
-    this.shadowRoot.adoptedStyleSheets = [stylesheet];
-    this.shadowRoot.append(this.#gutter, this.#editor);
 
     this.#editor.setSelectionRange(0, 0);
     this.#renderGutter();
