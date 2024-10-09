@@ -7,10 +7,7 @@ export default defineConfig({
   },
   server: {
     port: 5500,
-    strictPort: true,
-    watch: {
-      ignored: ["../src"]
-    }
+    strictPort: true
   },
   preview: {
     port: 5500,
