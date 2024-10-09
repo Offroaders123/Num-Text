@@ -12,6 +12,17 @@ export default class NumText extends HTMLElement {
 
   constructor() {
     super();
+
+    this.#gutter.part.add("gutter");
+
+    this.#editor.part.add("editor");
+    this.#editor.wrap = "off";
+    this.#editor.spellcheck = false;
+    this.#editor.autocomplete = "off";
+    this.#editor.autocapitalize = "none";
+    this.#editor.value = this.getAttribute("value") ?? "";
+    this.#editor.setAttribute("autocorrect", "off");
+
     this.shadowRoot.adoptedStyleSheets = [stylesheet];
     this.shadowRoot.append(this.#gutter, this.#editor);
   }
@@ -24,8 +35,6 @@ export default class NumText extends HTMLElement {
       event.preventDefault();
       this.#editor.focus({ preventScroll: !this.#gutter.contains(target!) });
     });
-
-    this.#gutter.part.add("gutter");
 
     this.#gutter.addEventListener("mousedown", event => {
       const index: number = [...this.#gutter.children].indexOf(event.target as Element);
@@ -41,14 +50,6 @@ export default class NumText extends HTMLElement {
       const lineEndIndex: number | null = (line + 1 in indices) ? indices[line + 1] ?? null : this.#editor.value.length;
       this.#editor.setSelectionRange(lineStartIndex, lineEndIndex);
     });
-
-    this.#editor.part.add("editor");
-    this.#editor.wrap = "off";
-    this.#editor.spellcheck = false;
-    this.#editor.autocomplete = "off";
-    this.#editor.autocapitalize = "none";
-    this.#editor.value = this.getAttribute("value") ?? "";
-    this.#editor.setAttribute("autocorrect", "off");
 
     this.#editor.addEventListener("input", () => {
       this.#renderGutter();
